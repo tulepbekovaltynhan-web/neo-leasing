@@ -1,0 +1,897 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Neo Leasing</title>
+<meta name="description" content="Демо-прототип Neo Leasing: подбор автомобиля и лизинг в одном приложении">
+<meta name="theme-color" content="#530AA7">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Neo Leasing">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>
+/* Layout: phone-shaped prototype centred on the page; app inside = header, scroll area, bottom tab bar; overlays and sheets live inside the device. Brand: Neo Bank Asia. */
+:root{
+  --violet:#530AA7; --violet-2:#6F3CD5; --indigo:#241454; --lav:#BFAEFD; --lav-soft:#EFEAFE; --mint:#00B386;
+  --bg:#FFFFFF; --page:#ECE8F6; --surface:#F6F4FB; --line:#E3DDF2; --fg:#241454; --muted:#6C6588; --link:#530AA7;
+  --danger:#C62F45; --warn:#A86400; --card:#FFFFFF; --win:#2A2440; --tire:#1E1A2B;
+  --map-bg:#F1EEF8; --map-road:#FFFFFF; --map-block:#E2DCF0; --map-park:#D5EFE6;
+  --font:"Helvetica Neue",Helvetica,Arial,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#140C2E; --page:#0B0620; --surface:#1D1440; --line:#33285A; --fg:#F2EEFF; --muted:#A79FC9; --card:#1D1440; --link:#BFAEFD;
+  --lav-soft:#2A1E57; --violet-2:#8F6FDD; --win:#0E0A1E; --warn:#E3A13B;
+  --map-bg:#1A1238; --map-road:#2E2456; --map-block:#231A48; --map-park:#173A35; color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#140C2E; --page:#0B0620; --surface:#1D1440; --line:#33285A; --fg:#F2EEFF; --muted:#A79FC9; --card:#1D1440; --link:#BFAEFD;
+  --lav-soft:#2A1E57; --violet-2:#8F6FDD; --win:#0E0A1E; --warn:#E3A13B; --map-bg:#1A1238; --map-road:#2E2456; --map-block:#231A48; --map-park:#173A35; color-scheme:dark}
+html,body{height:100%}
+body{background:var(--page);color:var(--fg);font-family:var(--font);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px;box-sizing:border-box}
+*{box-sizing:border-box}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--violet-2);outline-offset:2px}
+.note{font-size:12px;color:var(--muted);text-align:center;max-width:400px;margin:0}
+.device{position:relative;width:min(400px,100%);flex:1 1 auto;min-height:0;max-height:860px;background:var(--bg);border-radius:32px;overflow:hidden;display:flex;flex-direction:column;
+  box-shadow:0 0 0 10px #17102e,0 30px 60px -20px rgba(36,20,84,.45)}
+@media (max-width:520px){.device{border-radius:20px;box-shadow:0 0 0 1px var(--line)} .note{display:none} body{padding-block:8px}}
+.hdr{padding:14px 16px 10px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line);background:var(--bg);flex:none}
+.hdr h1{font-size:18px;margin:0;font-weight:700;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.logo{display:flex;align-items:center;gap:4px;font-weight:700;font-size:17px;letter-spacing:-.2px}
+.logo .neo{border:2px solid var(--violet);border-radius:50%;padding:1px 6px;color:var(--violet);font-size:14px}
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden}
+.pad{padding:14px 16px 20px;display:flex;flex-direction:column;gap:14px}
+.tabbar{flex:none;display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);background:var(--bg);padding-bottom:6px}
+.tabbar button{background:none;border:0;padding:8px 2px 4px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;color:var(--muted);position:relative}
+.tabbar button svg{width:22px;height:22px}
+.tabbar button[aria-current="true"]{color:var(--link)}
+.badge{position:absolute;top:3px;left:calc(50% + 6px);background:var(--mint);color:#fff;font-size:10px;font-weight:700;border-radius:9px;padding:1px 5px;min-width:16px}
+.btn{border:0;border-radius:12px;padding:13px 16px;font-weight:700;font-size:15px;background:var(--violet);color:#fff;width:100%;transition:transform .12s}
+.btn:active{transform:scale(.98)}
+.btn.sec{background:var(--lav-soft);color:var(--link)}
+.btn.ghost{background:none;color:var(--muted);font-weight:500;padding:8px}
+.btn.link{background:none;color:var(--link);padding:4px;font-weight:600;font-size:14px}
+.btn:disabled{opacity:.45}
+.row{display:flex;gap:8px;align-items:center}
+.between{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--bg);border-radius:20px;padding:7px 12px;font-size:13px;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.chip[aria-pressed="true"]{background:var(--violet);border-color:var(--violet);color:#fff}
+.dot{width:12px;height:12px;border-radius:50%;border:1px solid rgba(36,20,84,.25);flex:none}
+.cond{display:flex;align-items:center;gap:8px;background:var(--lav-soft);border-radius:12px;padding:9px 12px;font-size:13px;border:0;width:100%;text-align:left}
+.cond b{font-weight:700}
+.cond .edit{margin-left:auto;color:var(--link);font-weight:700;font-size:12px;flex:none}
+.modes{display:flex;background:var(--surface);border-radius:10px;padding:3px;gap:2px;flex:none}
+.modes button{border:0;background:none;border-radius:8px;padding:6px 8px;color:var(--muted);display:flex}
+.modes button[aria-pressed="true"]{background:var(--bg);color:var(--link);box-shadow:0 1px 3px rgba(36,20,84,.15)}
+.modes svg{width:18px;height:18px}
+.iconbtn{border:0;background:var(--surface);border-radius:10px;width:36px;height:36px;display:grid;place-items:center;flex:none;position:relative;color:var(--fg)}
+.iconbtn svg{width:19px;height:19px}
+.iconbtn .badge{left:auto;right:-4px;top:-4px}
+.art{background:radial-gradient(120% 90% at 50% 100%,var(--lav-soft),var(--surface));display:grid;place-items:center;position:relative;overflow:hidden}
+.art svg{width:90%}
+.art img{width:100%;height:100%;object-fit:cover;display:block}
+.credit{position:absolute;right:6px;bottom:4px;font-size:9px;color:#fff;background:rgba(0,0,0,.4);padding:1px 5px;border-radius:4px}
+.stack{position:relative;height:462px;margin-top:2px}
+.scard{position:absolute;inset:0;background:var(--card);border-radius:20px;border:1px solid var(--line);box-shadow:0 10px 30px -14px rgba(36,20,84,.35);overflow:hidden;display:flex;flex-direction:column;touch-action:pan-y;user-select:none}
+.scard.back{transform:scale(.95) translateY(12px);opacity:.75}
+.scard .art{height:206px;flex:none}
+.stamp{position:absolute;top:18px;padding:4px 10px;border:3px solid;border-radius:8px;font-weight:800;font-size:20px;opacity:0;letter-spacing:1px;z-index:3}
+.stamp.like{left:16px;color:var(--mint);border-color:var(--mint);transform:rotate(-12deg)}
+.stamp.nope{right:16px;color:var(--danger);border-color:var(--danger);transform:rotate(12deg)}
+.tags{position:absolute;left:12px;top:12px;display:flex;gap:6px;flex-wrap:wrap;z-index:2;right:12px}
+.tag{font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;background:var(--bg);color:var(--fg)}
+.tag.ok{background:var(--mint);color:#fff}
+.tag.pre{background:var(--indigo);color:#fff}
+.tag.ad{background:#FFF1C9;color:#6B4C00}
+.tag.match{background:var(--violet);color:#fff}
+.sbody{padding:14px 16px;display:flex;flex-direction:column;gap:7px;flex:1;min-height:0}
+.sbody h2{margin:0;font-size:20px;line-height:1.15}
+.specs{font-size:13px;color:var(--muted);line-height:1.45}
+.price{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-top:auto}
+.pay{font-size:22px;font-weight:800;color:var(--link);font-variant-numeric:tabular-nums}
+.pay small{font-size:13px;font-weight:600}
+.terms{font-size:11.5px;color:var(--muted)}
+.terms.warn{color:var(--warn);font-weight:600}
+.full{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;text-align:right;flex:none}
+.actions{display:flex;justify-content:center;gap:18px;margin-top:6px}
+.round{width:60px;height:60px;border-radius:50%;border:1px solid var(--line);background:var(--bg);display:grid;place-items:center;box-shadow:0 6px 14px -8px rgba(36,20,84,.4);transition:transform .12s}
+.round:active{transform:scale(.9)}
+.round.small{width:46px;height:46px;margin-top:7px}
+.round svg{width:26px;height:26px}
+.round.small svg{width:20px;height:20px}
+.round.no{color:var(--danger)} .round.yes{color:var(--mint)} .round.undo{color:var(--muted)}
+.feed{display:flex;flex-direction:column;gap:12px}
+.fcard{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;position:relative}
+.fcard.dim{opacity:.5}
+.fcard .open{border:0;background:none;padding:0;text-align:left;display:flex;flex-direction:column;width:100%}
+.fcard .art{height:150px}
+.fcard .body{padding:10px 12px 12px;display:flex;flex-direction:column;gap:4px}
+.fcard h3{margin:0;font-size:16px}
+.heart{position:absolute;right:10px;top:10px;width:34px;height:34px;border-radius:50%;border:0;background:var(--bg);display:grid;place-items:center;color:var(--muted);z-index:4}
+.heart[aria-pressed="true"]{color:#fff;background:var(--violet)}
+.heart svg{width:18px;height:18px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid .fcard .art{height:96px}
+.grid .fcard h3{font-size:14px}
+.grid .pay{font-size:16px}
+.grid .heart{width:30px;height:30px;right:6px;top:6px}
+.sortrow{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted)}
+.sortrow select{border:1px solid var(--line);border-radius:8px;padding:5px 8px;background:var(--bg);font-size:13px}
+.hero{background:var(--violet);color:#fff;border-radius:18px;padding:16px;position:relative;overflow:hidden;display:flex;flex-direction:column;gap:8px}
+.hero h2{margin:0;font-size:20px;max-width:72%;line-height:1.2}
+.hero p{margin:0;font-size:13px;opacity:.88;max-width:74%}
+.hero .btn{background:#fff;color:var(--violet);width:auto;align-self:flex-start;padding:9px 14px;font-size:14px}
+.mosaic{position:absolute;right:-6px;top:-6px;display:grid;grid-template-columns:repeat(4,18px)}
+.mosaic i{width:18px;height:18px;display:block}
+.smart{display:flex;gap:12px;align-items:center;border:1px solid var(--line);background:var(--card);border-radius:16px;padding:12px 14px;text-align:left;width:100%}
+.smart .ic{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--violet),var(--violet-2));display:grid;place-items:center;color:#fff;flex:none}
+.smart .ic svg{width:22px;height:22px}
+.smart b{display:block;font-size:15px}
+.smart small{color:var(--muted);font-size:12.5px}
+.sec-title{font-size:15px;font-weight:700;margin:4px 0 -4px}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.tile{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:8px 4px 7px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11.5px}
+.tile svg{width:100%;height:30px}
+.tile small{color:var(--muted);font-size:10.5px}
+.brands{display:flex;flex-wrap:wrap;gap:8px}
+label.f,.f{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted)}
+.val{font-size:18px;font-weight:700;color:var(--fg);font-variant-numeric:tabular-nums}
+.val small{font-size:12.5px;color:var(--muted);font-weight:500}
+input[type=range]{width:100%;accent-color:var(--violet)}
+.seg{display:flex;background:var(--surface);border-radius:12px;padding:3px}
+.seg button{flex:1;border:0;background:none;border-radius:9px;padding:8px;font-size:13px;color:var(--muted);font-weight:600}
+.seg button[aria-pressed="true"]{background:var(--bg);color:var(--fg);box-shadow:0 1px 3px rgba(36,20,84,.15)}
+.seg.mini{padding:2px;border-radius:9px} .seg.mini button{padding:4px 10px;font-size:12px;border-radius:7px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.card.accent{background:var(--lav-soft);border-color:transparent}
+.big{font-size:28px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--link)}
+.big small{font-size:15px}
+.kv{display:grid;grid-template-columns:1fr auto;gap:6px 12px;font-size:13.5px;margin:0}
+.kv dt{color:var(--muted)} .kv dd{margin:0;text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums;width:100%}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+thead th{background:var(--violet);color:#fff;font-weight:600}
+tbody tr:nth-child(even) td{background:var(--surface)}
+.cmp th:first-child,.cmp td:first-child{position:sticky;left:0;background:var(--bg);z-index:1;color:var(--muted);font-weight:500}
+.cmp thead th:first-child{background:var(--violet);color:#fff}
+.cmp tbody tr:nth-child(even) td:first-child{background:var(--surface)}
+.cmp td.diff{color:var(--link);font-weight:700}
+.cmp .pin td{background:var(--lav-soft)!important;font-weight:700}
+.cmp .art-cell{padding:4px}
+.cmp .art-cell .art{width:120px;height:70px;border-radius:8px}
+.overlay{position:absolute;inset:0;background:var(--bg);display:flex;flex-direction:column;z-index:20;animation:slide .24s ease}
+.overlay.zoom{animation:zoom .28s cubic-bezier(.2,.8,.2,1)}
+@keyframes slide{from{transform:translateX(30px);opacity:.6}to{transform:none;opacity:1}}
+@keyframes zoom{from{transform:scale(.9);opacity:0}to{transform:none;opacity:1}}
+.scrim{position:absolute;inset:0;background:rgba(20,12,46,.45);z-index:30;display:flex;align-items:flex-end}
+.sheet{background:var(--bg);width:100%;max-height:90%;border-radius:20px 20px 0 0;display:flex;flex-direction:column;animation:up .24s ease}
+@keyframes up{from{transform:translateY(40px);opacity:.6}to{transform:none;opacity:1}}
+.sheet .hdr{border-radius:20px 20px 0 0}
+.foot{flex:none;padding:12px 16px 16px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px;background:var(--bg)}
+.back{border:0;background:var(--surface);border-radius:10px;width:36px;height:36px;display:grid;place-items:center;flex:none;color:var(--fg)}
+.back svg{width:20px;height:20px}
+.detail-art{height:230px}
+.specgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.spec{background:var(--surface);border-radius:10px;padding:8px 10px;font-size:12px;color:var(--muted);display:flex;flex-direction:column;gap:2px;min-width:0}
+.spec b{color:var(--fg);font-size:14px}
+.opts{display:flex;flex-wrap:wrap;gap:6px}
+.opt{font-size:12px;background:var(--surface);padding:5px 9px;border-radius:8px}
+.disc{font-size:11.5px;color:var(--muted);line-height:1.4;margin:0}
+.warnbox{background:rgba(168,100,0,.1);color:var(--warn);border-radius:10px;padding:9px 11px;font-size:12.5px;font-weight:600;line-height:1.35}
+.okbox{background:rgba(0,179,134,.12);color:var(--mint);border-radius:10px;padding:9px 11px;font-size:12.5px;font-weight:600}
+.filt h4{margin:6px 0 2px;font-size:14px;color:var(--fg)}
+.filt .chips{flex-wrap:wrap;overflow:visible}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px;font-weight:600;background:none;border:0;padding:0;width:100%;text-align:left}
+.switch .tg{width:44px;height:26px;border-radius:13px;background:var(--line);position:relative;flex:none;transition:background .2s}
+.switch .tg::after{content:"";position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.switch[aria-checked="true"] .tg{background:var(--violet)}
+.switch[aria-checked="true"] .tg::after{transform:translateX(18px)}
+.tco-bar{display:flex;height:12px;border-radius:6px;overflow:hidden}
+.tco-bar i{display:block;height:100%}
+.legend{display:flex;flex-direction:column;gap:6px;font-size:13px}
+.legend div{display:flex;align-items:center;gap:8px}
+.legend span.v{margin-left:auto;font-weight:700;font-variant-numeric:tabular-nums}
+.sw{width:10px;height:10px;border-radius:3px;flex:none}
+.steps{display:flex;flex-direction:column;margin:0;padding:0;list-style:none}
+.steps li{display:flex;gap:12px;align-items:flex-start;padding-bottom:12px;position:relative}
+.steps li:not(:last-child)::before{content:"";position:absolute;left:11px;top:24px;bottom:2px;width:2px;background:var(--line)}
+.steps li.done:not(:last-child)::before{background:var(--mint)}
+.steps .n{width:24px;height:24px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-size:11px;font-weight:700;flex:none;background:var(--bg);color:var(--muted)}
+.steps li.done .n{background:var(--mint);border-color:var(--mint);color:#fff}
+.steps li.now .n{border-color:var(--violet);color:var(--link)}
+.steps .t{font-size:14px;font-weight:600} .steps .s{font-size:12px;color:var(--muted)}
+.steps li.todo .t{color:var(--muted);font-weight:500}
+.demo{border:1px dashed var(--violet-2);color:var(--violet-2);background:none;border-radius:10px;padding:9px;font-size:13px;font-weight:600;width:100%}
+.ok-ic{width:60px;height:60px;border-radius:50%;background:var(--mint);display:grid;place-items:center;color:#fff;margin:4px auto 0;animation:pop .5s cubic-bezier(.2,1.6,.4,1)}
+.ok-ic svg{width:32px;height:32px}
+@keyframes pop{from{transform:scale(.3);opacity:0}to{transform:none;opacity:1}}
+.center{text-align:center}
+.muted{color:var(--muted)}
+.small{font-size:12.5px}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:13px}
+.check input{width:18px;height:18px;accent-color:var(--violet);flex:none;margin-top:1px}
+.inp{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--bg);width:100%;font-size:15px}
+.slots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.slots .chip{justify-content:center}
+.list-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);font-size:14px;background:none;border-left:0;border-right:0;border-top:0;width:100%;text-align:left}
+.list-item:last-child{border-bottom:0}
+.list-item .ic{width:36px;height:36px;border-radius:10px;background:var(--lav-soft);display:grid;place-items:center;color:var(--link);flex:none}
+.list-item .ic svg{width:18px;height:18px}
+.list-item .grow{flex:1;min-width:0}
+.list-item .grow small{display:block;color:var(--muted);font-size:12px}
+.pill{font-size:11px;font-weight:700;border-radius:6px;padding:3px 7px;background:var(--surface);color:var(--muted);flex:none}
+.pill.ok{background:rgba(0,179,134,.14);color:var(--mint)}
+.pill.warn{background:rgba(168,100,0,.14);color:var(--warn)}
+.welcome{position:absolute;inset:0;background:var(--violet);color:#fff;display:flex;flex-direction:column;z-index:40;padding:28px 22px 22px;gap:14px;overflow:hidden}
+.welcome .mos{display:grid;grid-template-columns:repeat(6,1fr);margin:0 -22px 0 30%}
+.welcome .mos i{aspect-ratio:1;display:block;animation:fadeIn .6s ease both}
+@keyframes fadeIn{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+.welcome h2{font-size:30px;line-height:1.08;margin:auto 0 0;letter-spacing:-.5px}
+.welcome p{margin:0;opacity:.88;font-size:15px;line-height:1.4}
+.welcome .btn{background:#fff;color:var(--violet)}
+.welcome .logo{color:#fff} .welcome .logo .neo{border-color:#fff;color:#fff}
+.toast{position:absolute;left:16px;right:16px;bottom:76px;background:var(--indigo);color:#fff;border-radius:12px;padding:11px 14px;font-size:13.5px;z-index:60;box-shadow:0 10px 24px -10px rgba(0,0,0,.4);animation:up .2s ease}
+.empty{text-align:center;padding:30px 10px;display:flex;flex-direction:column;gap:10px;align-items:center;color:var(--muted)}
+.empty b{color:var(--fg);font-size:16px}
+.spinner{width:42px;height:42px;border-radius:50%;border:4px solid var(--lav-soft);border-top-color:var(--violet);animation:spin 1s linear infinite;margin:10px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hint{background:var(--indigo);color:#fff;border-radius:12px;padding:10px 12px;font-size:12.5px;display:flex;gap:8px;align-items:center}
+.hint button{background:none;border:0;color:var(--lav);font-weight:700;font-size:12.5px;padding:2px}
+.hint .sp{flex:1}
+.match{position:absolute;inset:0;z-index:55;display:grid;place-items:center;pointer-events:none;background:radial-gradient(circle at 50% 45%,rgba(83,10,167,.35),rgba(20,12,46,0) 70%);animation:fadeOut 1.1s ease forwards}
+.match .m{background:var(--bg);border-radius:20px;padding:18px 22px;text-align:center;box-shadow:0 20px 40px -12px rgba(36,20,84,.5);animation:pop .45s cubic-bezier(.2,1.6,.4,1)}
+.match .h{width:56px;height:56px;margin:0 auto 6px;border-radius:50%;background:var(--violet);color:#fff;display:grid;place-items:center}
+.match .h svg{width:28px;height:28px}
+.match b{display:block;font-size:17px}
+@keyframes fadeOut{0%,70%{opacity:1}100%{opacity:0}}
+canvas.confetti{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:58}
+.qopts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.qopt{border:1.5px solid var(--line);background:var(--card);border-radius:14px;padding:14px 12px;text-align:left;display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600;transition:transform .12s}
+.qopt:active{transform:scale(.97)}
+.qopt span{font-size:24px;line-height:1}
+.qopt small{font-weight:400;color:var(--muted);font-size:12px}
+.progress{height:4px;background:var(--line);border-radius:2px;overflow:hidden}
+.progress i{display:block;height:100%;background:var(--violet);transition:width .3s}
+.reason{display:flex;flex-wrap:wrap;gap:5px}
+.reason span{font-size:11px;background:var(--lav-soft);color:var(--link);border-radius:6px;padding:2px 7px;font-weight:600}
+.mrow{display:flex;gap:12px;align-items:center;border:1px solid var(--line);border-radius:14px;padding:8px;background:var(--card);text-align:left;width:100%}
+.mrow .art{width:96px;height:64px;border-radius:10px;flex:none}
+.mrow .grow{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.pct{font-size:18px;font-weight:800;color:var(--mint);flex:none}
+.map{border-radius:16px;overflow:hidden;border:1px solid var(--line);position:relative}
+.map svg{display:block;width:100%;height:auto}
+.eta{position:absolute;left:10px;top:10px;background:var(--bg);border-radius:10px;padding:6px 10px;font-size:13px;font-weight:700;box-shadow:0 4px 12px -6px rgba(36,20,84,.4)}
+.eta small{display:block;font-weight:500;color:var(--muted);font-size:11px}
+.pres{display:flex;flex-direction:column;gap:8px}
+.pres button{display:flex;gap:12px;align-items:center;border:1px solid var(--line);background:var(--card);border-radius:12px;padding:11px 12px;text-align:left;font-size:14px;font-weight:600}
+.pres button i{font-style:normal;width:26px;height:26px;border-radius:8px;background:var(--lav-soft);color:var(--link);display:grid;place-items:center;font-size:12px;font-weight:800;flex:none}
+.pres button small{display:block;font-weight:400;color:var(--muted);font-size:12px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style><style>
+@media (max-width:520px){body{padding:0}.note{display:none}.device{width:100%;max-height:none;height:100%;border-radius:0;box-shadow:none;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}}
+</style>
+</head>
+<body>
+
+
+<div class="device" id="device"><div id="app" style="display:contents"></div></div>
+<p class="note">Демо-прототип Neo Leasing. Все автомобили, цены и условия — демонстрационные, не являются офертой.</p>
+
+<script>
+(function(){
+"use strict";
+var COLORS={"Белый":"#F3F3F1","Чёрный":"#1F1E24","Серый":"#7E828A","Серебристый":"#C4C7CC","Синий":"#1F4E8C","Красный":"#B3262E","Зелёный":"#4E7A63","Хаки":"#5D6449","Оранжевый":"#D9772B","Бежевый":"#CDBB9B","Коричневый":"#5E4535"};
+var PREMIUM=["BMW","Mercedes-Benz","Audi","Zeekr","Tank"];
+function C(id,b,m,y,body,c,fuel,eng,hp,gb,dr,km,price,av,dealer,city,opt,extra){var o={id:id,b:b,m:m,y:y,body:body,c:c,hex:COLORS[c],fuel:fuel,eng:eng,hp:hp,gb:gb,dr:dr,km:km,price:price,av:av,st:km===0?"Новое":"С пробегом",dealer:dealer,city:city,opt:opt,seats:5,img:null,credit:null};for(var k in extra)o[k]=extra[k];return o;}
+var O1=["Климат-контроль","Камера 360°","Подогрев сидений","CarPlay / Android Auto","Бесключевой доступ"];
+var O2=["Климат-контроль","Камера заднего вида","Парктроники","Подогрев сидений и руля"];
+var O3=["Кожаный салон","Адаптивный круиз","Проекция на лобовое стекло","Панорамная крыша","Камера 360°","Электропривод багажника"];
+var O4=["Кондиционер","Парктроники","Подогрев сидений"];
+var CARS=[
+ C(1,"Geely","Coolray",2026,"Кроссовер","Белый","Бензин",1.5,177,"Робот","Передний",0,78900,"В наличии","Автоцентр «Восток»","Минск",O1,{ad:true}),
+ C(2,"Belgee","X50",2026,"Кроссовер","Красный","Бензин",1.5,177,"Робот","Передний",0,69900,"В наличии","Сити Авто","Минск",O1,{ad:true}),
+ C(3,"Geely","Atlas",2026,"Кроссовер","Серый","Бензин",2.0,200,"Автомат","Полный",0,104900,"Предзаказ","Автоцентр «Восток»","Минск",O1.concat(["Панорамная крыша"]),{wait:3}),
+ C(4,"Toyota","Camry",2021,"Седан","Чёрный","Бензин",2.5,200,"Автомат","Передний",68000,96500,"В наличии","Премиум Трейд","Минск",O2.concat(["Кожаный салон"]),{owners:1}),
+ C(5,"Haval","Jolion",2025,"Кроссовер","Оранжевый","Бензин",1.5,150,"Робот","Передний",0,74500,"В наличии","Мотор Плюс","Брест",O1),
+ C(6,"Volkswagen","Polo",2020,"Седан","Серебристый","Бензин",1.6,110,"Автомат","Передний",74000,44900,"В наличии","Сити Авто","Минск",O4,{owners:2}),
+ C(7,"Tank","300",2025,"Внедорожник","Хаки","Бензин",2.0,220,"Автомат","Полный",0,164900,"В наличии","Мотор Плюс","Минск",O3),
+ C(8,"Belgee","X70",2025,"Кроссовер","Синий","Бензин",2.0,200,"Автомат","Передний",0,89900,"В наличии","Сити Авто","Гродно",O1),
+ C(9,"Skoda","Octavia Combi",2020,"Универсал","Серый","Бензин",1.4,150,"Робот","Передний",88000,57900,"В наличии","Премиум Трейд","Минск",O2,{owners:1}),
+ C(10,"Geely","EX5",2026,"Кроссовер","Зелёный","Электро",0,218,"Автомат","Передний",0,92900,"Предзаказ","Автоцентр «Восток»","Минск",O1.concat(["Проекция на лобовое стекло"]),{wait:2,range:550}),
+ C(11,"Kia","Sportage",2022,"Кроссовер","Красный","Бензин",2.0,150,"Автомат","Полный",39000,86900,"В наличии","Мотор Плюс","Минск",O2,{owners:1}),
+ C(12,"Lada","Vesta",2025,"Седан","Белый","Бензин",1.6,106,"Механика","Передний",0,46900,"В наличии","Сити Авто","Гомель",O4),
+ C(13,"Toyota","Land Cruiser 200",2016,"Внедорожник","Белый","Дизель",4.5,249,"Автомат","Полный",231000,189000,"В наличии","Премиум Трейд","Минск",O3,{owners:2,seats:7}),
+ C(14,"Chery","Tiggo 7 Pro Max",2025,"Кроссовер","Белый","Бензин",1.6,186,"Робот","Полный",0,89500,"В наличии","Мотор Плюс","Минск",O1),
+ C(15,"BMW","X5",2020,"Внедорожник","Чёрный","Дизель",3.0,249,"Автомат","Полный",98000,172000,"В наличии","Премиум Трейд","Минск",O3,{owners:1}),
+ C(16,"Kia","Rio X",2021,"Хэтчбек","Синий","Бензин",1.6,123,"Автомат","Передний",47000,42900,"В наличии","Сити Авто","Витебск",O4,{owners:1}),
+ C(17,"Haval","H6",2025,"Кроссовер","Серебристый","Бензин",2.0,192,"Робот","Полный",0,99900,"В наличии","Мотор Плюс","Минск",O1),
+ C(18,"Mercedes-Benz","E 200",2019,"Седан","Серый","Бензин",2.0,197,"Автомат","Задний",112000,124900,"В наличии","Премиум Трейд","Минск",O3,{owners:2}),
+ C(19,"Toyota","Hilux",2021,"Пикап","Серебристый","Дизель",2.8,204,"Автомат","Полный",73000,128900,"В наличии","Мотор Плюс","Могилёв",O2,{owners:1}),
+ C(20,"Hyundai","Tucson",2021,"Кроссовер","Белый","Бензин",2.0,150,"Автомат","Передний",55000,79500,"В наличии","Сити Авто","Минск",O2,{owners:1}),
+ C(21,"Geely","Monjaro",2026,"Кроссовер","Чёрный","Бензин",2.0,238,"Автомат","Полный",0,144900,"Предзаказ","Автоцентр «Восток»","Минск",O3,{wait:3}),
+ C(22,"Volkswagen","Multivan",2020,"Минивэн","Серый","Дизель",2.0,150,"Робот","Передний",134000,129000,"В наличии","Премиум Трейд","Минск",O2,{owners:1,seats:7}),
+ C(23,"Audi","Q5",2020,"Кроссовер","Синий","Бензин",2.0,249,"Робот","Полный",86000,126900,"В наличии","Премиум Трейд","Минск",O3,{owners:1}),
+ C(24,"Renault","Logan",2018,"Седан","Бежевый","Бензин",1.6,82,"Механика","Передний",121000,26900,"В наличии","Сити Авто","Брест",["Кондиционер"],{owners:3}),
+ C(25,"Toyota","RAV4",2022,"Кроссовер","Серый","Гибрид",2.5,218,"Вариатор","Полный",41000,118000,"В наличии","Мотор Плюс","Минск",O2,{owners:1}),
+ C(26,"Zeekr","001",2024,"Лифтбек","Синий","Электро",0,544,"Автомат","Полный",12000,169000,"В наличии","Премиум Трейд","Минск",O3,{owners:1,range:620}),
+ C(27,"Geely","Emgrand",2026,"Седан","Серебристый","Бензин",1.5,122,"Автомат","Передний",0,54900,"В наличии","Автоцентр «Восток»","Минск",O2),
+ C(28,"Volkswagen","Tiguan",2019,"Кроссовер","Коричневый","Бензин",2.0,180,"Робот","Полный",96000,79900,"В наличии","Сити Авто","Минск",O2,{owners:2})
+];
+var BODIES=["Кроссовер","Внедорожник","Седан","Хэтчбек","Универсал","Лифтбек","Пикап","Минивэн"];
+var BT={"Кроссовер":"suv","Внедорожник":"suv","Седан":"sedan","Хэтчбек":"hatch","Универсал":"wagon","Лифтбек":"sedan","Пикап":"pickup","Минивэн":"van"};
+var RATE=0.14, FUEL=2.55, KWH=0.30, KM=1500, MAXPCT=49;
+
+var SHAPES={
+ suv:{bot:126,wh:[[104,117,28],[298,117,28]],b:"M42 126 L38 104 Q36 92 42 84 L58 62 Q68 48 88 46 L240 44 Q260 44 272 54 L300 74 L350 80 Q368 84 372 96 L374 112 Q374 124 364 126 Z",g:"M74 74 L84 58 Q90 51 102 50 L240 49 Q254 49 266 58 L286 74 Z",p:[[134,8],[204,7]],seams:[[138,76,116],[207,76,120],[288,76,108]],hd:[[156,86],[226,86]],hl:"M340 84 L366 90 Q371 92 369 97 L342 93 Z",tl:"M38 86 L54 82 L52 94 L37 97 Z",mir:"M276 72 L290 67 Q297 67 296 74 L294 78 L278 78 Z",belt:"M50 80 Q200 75 346 82",clad:1,rails:[100,236,42]},
+ offroad:{bot:124,wh:[[104,116,29],[300,116,29]],b:"M30 124 L28 100 L30 52 Q32 38 50 37 L252 36 Q264 36 272 46 L294 74 L350 80 Q370 83 374 96 L376 112 Q376 122 366 124 Z",g:"M44 72 L46 46 Q48 42 56 42 L250 42 Q260 42 266 50 L284 72 Z",p:[[122,8],[198,8]],seams:[[126,74,114],[202,74,118],[286,74,108]],hd:[[146,84],[220,84]],hl:"M346 84 L370 88 Q374 90 373 96 L348 94 Z",tl:"M29 68 L38 68 L38 90 L29 90 Z",mir:"M278 70 L292 66 Q299 66 298 73 L296 77 L280 77 Z",belt:"M32 76 L348 80",clad:1,rails:[60,240,33]},
+ sedan:{bot:128,wh:[[104,120,25],[300,120,25]],b:"M32 128 L29 108 Q29 96 38 92 L62 87 L98 84 Q122 60 150 55 L226 54 Q246 55 262 66 L288 84 L346 90 Q366 94 370 106 L372 118 Q372 127 362 128 Z",g:"M108 84 Q126 64 150 60 L224 59 Q240 60 254 70 L270 84 Z",p:[[186,6]],seams:[[189,86,120],[270,86,114]],hd:[[156,94],[228,94]],hl:"M342 92 L366 96 Q370 98 368 102 L344 100 Z",tl:"M30 98 L46 95 L46 104 L30 106 Z",mir:"M266 82 L280 78 Q286 78 285 84 L283 87 L268 87 Z",belt:"M40 92 Q200 86 342 92"},
+ hatch:{bot:128,wh:[[104,120,25],[294,120,25]],b:"M36 128 L33 106 Q33 92 40 86 L46 68 Q52 53 72 52 L222 50 Q240 50 254 62 L282 84 L338 90 Q360 94 364 106 L366 118 Q366 127 356 128 Z",g:"M58 82 Q60 62 76 57 L220 56 Q236 56 248 66 L266 82 Z",p:[[124,7],[188,6]],seams:[[191,84,120],[268,84,114]],hd:[[156,92],[226,92]],hl:"M336 90 L360 95 Q364 97 362 101 L338 99 Z",tl:"M34 88 L46 86 L45 98 L34 100 Z",mir:"M262 80 L276 76 Q282 76 281 82 L279 85 L264 85 Z",belt:"M42 86 Q200 84 338 90"},
+ wagon:{bot:128,wh:[[102,120,25],[302,120,25]],b:"M30 128 L27 106 Q27 94 35 88 L41 62 Q45 50 64 49 L236 47 Q254 48 266 60 L292 84 L348 90 Q368 94 372 106 L374 118 Q374 127 364 128 Z",g:"M50 82 L54 60 Q58 54 68 54 L234 53 Q250 53 260 64 L276 82 Z",p:[[124,7],[198,6]],seams:[[201,84,120],[278,84,114]],hd:[[160,92],[236,92]],hl:"M344 90 L368 95 Q372 97 370 101 L346 99 Z",tl:"M28 90 L42 88 L41 100 L28 102 Z",mir:"M272 80 L286 76 Q292 76 291 82 L289 85 L274 85 Z",belt:"M36 86 Q200 82 344 90",rails:[70,230,46]},
+ pickup:{bot:124,wh:[[98,116,28],[306,116,28]],b:"M22 124 L20 98 L22 76 L148 76 L152 46 Q154 38 166 38 L248 38 Q262 38 270 48 L292 74 L350 80 Q370 84 374 98 L376 112 Q376 122 368 124 Z",g:"M162 72 L164 46 Q166 43 174 43 L246 43 Q256 43 262 51 L278 72 Z",p:[[212,7]],seams:[[150,76,116],[216,74,118],[282,74,108]],hd:[[184,84],[244,84]],hl:"M346 84 L370 88 Q374 90 373 96 L348 94 Z",tl:"M20 80 L28 80 L28 94 L20 94 Z",mir:"M276 70 L290 66 Q297 66 296 73 L294 77 L278 77 Z",belt:"M152 78 L346 80",clad:1,bed:1},
+ van:{bot:128,wh:[[98,120,25],[314,120,25]],b:"M24 128 L22 100 L24 46 Q26 30 46 29 L262 28 Q280 30 296 48 L322 76 L356 84 Q372 88 376 102 L376 118 Q376 127 368 128 Z",g:"M38 70 L40 40 Q42 36 50 36 L268 35 Q280 36 290 50 L306 70 Z",p:[[104,6],[176,6],[244,7]],seams:[[180,72,122],[248,72,122],[312,76,110]],hd:[[196,84],[262,84]],hl:"M350 86 L372 92 Q376 94 374 99 L352 96 Z",tl:"M23 74 L31 74 L31 96 L23 96 Z",mir:"M300 70 L314 66 Q320 66 319 72 L317 76 L302 76 Z",belt:"M26 74 L320 78"}
+};
+var BTR={"Кроссовер":"suv","Внедорожник":"offroad","Седан":"sedan","Хэтчбек":"hatch","Универсал":"wagon","Лифтбек":"sedan","Пикап":"pickup","Минивэн":"van"};
+function mixc(hex,t){var n=parseInt(hex.slice(1),16),c=[n>>16,n>>8&255,n&255],T=t<0?0:255,p=Math.abs(t);return "rgb("+c.map(function(v){return Math.round(v+(T-v)*p);}).join(",")+")";}
+var uid=0;
+function carSVG(body,hex){
+ var s=SHAPES[BTR[body]||"sedan"],k="k"+(++uid),bot=s.bot,gy=s.wh[0][1]+s.wh[0][2]+1,W=function(n){return k+n;};
+ var lum=(function(){var n=parseInt(hex.slice(1),16);return ((n>>16)*.3+(n>>8&255)*.59+(n&255)*.11)/255;})();
+ var h='<svg viewBox="0 0 400 '+(gy+10)+'" aria-hidden="true"><defs>';
+ h+='<linearGradient id="'+W("b")+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+mixc(hex,lum>.85?-.04:.32)+'"/><stop offset=".38" stop-color="'+hex+'"/><stop offset=".62" stop-color="'+mixc(hex,-.12)+'"/><stop offset="1" stop-color="'+mixc(hex,-.48)+'"/></linearGradient>';
+ h+='<linearGradient id="'+W("g")+'" x1="0" y1="0" x2=".3" y2="1"><stop offset="0" stop-color="#5A6272"/><stop offset=".55" stop-color="#1D2129"/><stop offset="1" stop-color="#0E1015"/></linearGradient>';
+ h+='<radialGradient id="'+W("r")+'" cx=".42" cy=".38" r=".75"><stop offset="0" stop-color="#F4F5F8"/><stop offset=".6" stop-color="#B7BAC3"/><stop offset="1" stop-color="#6E717B"/></radialGradient>';
+ h+='<linearGradient id="'+W("l")+'" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#CFE0FF"/></linearGradient>';
+ h+='<linearGradient id="'+W("t")+'" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7E0F18"/><stop offset="1" stop-color="#E0303C"/></linearGradient>';
+ h+='<clipPath id="'+W("c")+'"><path d="'+s.b+'"/></clipPath><clipPath id="'+W("cg")+'"><path d="'+s.g+'"/></clipPath>';
+ h+='<filter id="'+W("f")+'" x="-10%" y="-200%" width="120%" height="500%"><feGaussianBlur stdDeviation="5"/></filter></defs>';
+ h+='<ellipse cx="200" cy="'+gy+'" rx="178" ry="7" fill="#0B0620" opacity=".38" filter="url(#'+W("f")+')"/>';
+ if(s.rails)h+='<rect x="'+s.rails[0]+'" y="'+s.rails[2]+'" width="'+(s.rails[1]-s.rails[0])+'" height="3.5" rx="1.5" fill="#26242C"/>';
+ h+='<path d="'+s.b+'" fill="url(#'+W("b")+')"/>';
+ h+='<g clip-path="url(#'+W("c")+')">';
+ if(s.clad)h+='<rect x="0" y="'+(bot-11)+'" width="400" height="14" fill="#2A2830" opacity=".85"/>';
+ h+='<path d="'+s.belt+'" stroke="#fff" stroke-opacity=".55" stroke-width="1.6" fill="none"/><path d="'+s.belt+'" transform="translate(0 9)" stroke="#fff" stroke-opacity=".13" stroke-width="7" fill="none"/>';
+ h+='<path d="'+s.belt+'" transform="translate(0 24)" stroke="#000" stroke-opacity=".12" stroke-width="1.2" fill="none"/>';
+ s.seams.forEach(function(q){h+='<line x1="'+q[0]+'" y1="'+q[1]+'" x2="'+q[0]+'" y2="'+q[2]+'" stroke="#000" stroke-opacity=".28" stroke-width="1"/>';});
+ if(s.bed)h+='<rect x="22" y="76" width="126" height="4" fill="#000" opacity=".25"/>';
+ h+='</g>';
+ h+='<path d="'+s.g+'" fill="url(#'+W("g")+')"/><g clip-path="url(#'+W("cg")+')"><path d="M150 20 L196 20 L160 100 L114 100 Z" fill="#fff" opacity=".13"/><path d="M206 20 L220 20 L184 100 L170 100 Z" fill="#fff" opacity=".08"/></g>';
+ s.p.forEach(function(q){h+='<rect x="'+q[0]+'" y="30" width="'+q[1]+'" height="60" fill="'+mixc(hex,lum>.85?-.06:-.05)+'" clip-path="url(#'+W("cg")+')"/>';});
+ h+='<path d="'+s.g+'" fill="none" stroke="#D5D8DE" stroke-width="1.4" stroke-opacity=".85"/>';
+ s.hd.forEach(function(q){h+='<rect x="'+q[0]+'" y="'+q[1]+'" width="15" height="3.2" rx="1.6" fill="'+mixc(hex,-.35)+'"/><rect x="'+q[0]+'" y="'+q[1]+'" width="15" height="1.2" rx=".6" fill="#fff" opacity=".4"/>';});
+ h+='<path d="'+s.mir+'" fill="'+mixc(hex,-.15)+'"/><path d="'+s.mir+'" fill="none" stroke="#000" stroke-opacity=".25" stroke-width=".8"/>';
+ h+='<path d="'+s.hl+'" fill="url(#'+W("l")+')" stroke="#3A3D46" stroke-width="1"/><path d="'+s.tl+'" fill="url(#'+W("t")+')"/>';
+ s.wh.forEach(function(w){var x=w[0],y=w[1],r=w[2],R=bot-y+r+4;
+  h+='<path d="M'+(x-R)+' '+bot+' A'+R+' '+R+' 0 0 1 '+(x+R)+' '+bot+' Z" fill="#0D0C12"/>';
+  if(s.clad)h+='<path d="M'+(x-R)+' '+bot+' A'+R+' '+R+' 0 0 1 '+(x+R)+' '+bot+'" fill="none" stroke="#2A2830" stroke-width="5"/>';
+  h+='<circle cx="'+x+'" cy="'+y+'" r="'+r+'" fill="#16141B"/><circle cx="'+x+'" cy="'+y+'" r="'+(r*.92)+'" fill="none" stroke="#2D2B33" stroke-width="'+(r*.08)+'"/>';
+  h+='<circle cx="'+x+'" cy="'+y+'" r="'+(r*.7)+'" fill="#2E3037"/><g transform="translate('+x+' '+y+')">';
+  for(var i=0;i<5;i++)h+='<path d="M-'+(r*.09)+' -'+(r*.15)+' L-'+(r*.17)+' -'+(r*.66)+' L'+(r*.17)+' -'+(r*.66)+' L'+(r*.09)+' -'+(r*.15)+' Z" fill="url(#'+W("r")+')" transform="rotate('+(i*72+18)+')"/>';
+  h+='<circle r="'+(r*.69)+'" fill="none" stroke="url(#'+W("r")+')" stroke-width="'+(r*.07)+'"/><circle r="'+(r*.19)+'" fill="url(#'+W("r")+')"/><circle r="'+(r*.06)+'" fill="#4A4C55"/></g>';
+ });
+ return h+'</svg>';
+}
+function art(c){return c.img?'<img src="'+c.img+'" alt="'+c.b+' '+c.m+'" loading="lazy">'+(c.credit?'<span class="credit">'+c.credit+'</span>':''):carSVG(c.body,c.hex);}
+
+function fmt(n){return Math.round(n).toLocaleString("ru-RU").replace(/[  ,]/g," ");}
+function pv(term){var i=RATE/12;return (1-Math.pow(1+i,-term))/i;}
+function annuity(P,term){return P/pv(term);}
+function schedule(price,advSum,term){var i=RATE/12,P=price-advSum,p=annuity(P,term),rows=[],bal=P;
+ for(var m=1;m<=term;m++){var int=bal*i,prin=p-int;bal-=prin;var dd=new Date(2026,9+m,15);rows.push({n:m,date:dd.toLocaleDateString("ru-RU"),prin:prin,int:int,total:p,bal:Math.max(bal,0)});}return rows;}
+function minPct(c){var m=c.km===0?10:(c.y<=2020?30:20);if(S.limit)m=Math.max(m,S.limit.minAdv);return m;}
+function advFor(c,cond){cond=cond||S.cond;var mn=minPct(c),r={min:mn,short:0,extra:0};
+ if(cond.advMode==="pct"){r.pct=Math.min(MAXPCT,Math.max(mn,cond.advPct));if(cond.advPct<mn)r.short=c.price*(mn-cond.advPct)/100;}
+ else{var p=cond.advSum/c.price*100;if(p<mn){r.short=c.price*mn/100-cond.advSum;r.pct=mn;}else if(p>MAXPCT){r.extra=cond.advSum-c.price*MAXPCT/100;r.pct=MAXPCT;}else r.pct=p;}
+ r.sum=c.price*r.pct/100;return r;}
+function myTerm(){return S.limit?Math.min(S.cond.term,S.limit.maxTerm):S.cond.term;}
+function carPay(c){return annuity(c.price-advFor(c).sum,myTerm());}
+function advText(c){var a=advFor(c);
+ if(a.short)return '<span class="terms warn">Нужно ещё '+fmt(a.short)+' BYN аванса (мин. '+a.min+'%)</span>';
+ if(a.extra)return '<span class="terms">аванс '+fmt(a.sum)+' BYN ('+MAXPCT+'%), '+fmt(a.extra)+' BYN останутся у вас</span>';
+ return '<span class="terms">аванс '+fmt(a.sum)+' BYN ('+Math.round(a.pct)+'%) · '+myTerm()+' мес.</span>';}
+function inBudget(c){return S.cond.btype==="pay"?carPay(c)<=S.cond.pay:c.price<=S.cond.price;}
+function inLimit(c){return !S.limit||c.price-advFor(c).sum<=S.limit.amount;}
+function budgetMax(){var c=S.cond;if(c.btype==="price")return c.price;var P=c.pay*pv(myTerm());return c.advMode==="byn"?c.advSum+P:P/(1-c.advPct/100);}
+function tco(c,advSum,term){var pay=annuity(c.price-advSum,term);var ins=c.price*0.035/12;var fuel;
+ if(c.fuel==="Электро")fuel=17*KM/100*KWH;else{var l=5.6+Math.max(0,c.eng-1.4)*2.4+(c.dr==="Полный"?0.8:0);if(c.fuel==="Дизель")l*=0.82;if(c.fuel==="Гибрид")l=5.3;fuel=l*KM/100*FUEL;}
+ var serv=c.km===0?60:(c.y<2018?170:110);return {pay:pay,ins:ins,fuel:fuel,serv:serv,total:pay+ins+fuel+serv};}
+
+function fresh(){return {
+ welcome:true, tab:"catalog", view:"home", mode:"swipe",
+ cond:{advMode:"byn",advSum:20000,advPct:20,term:36,btype:"pay",pay:3000,price:100000},
+ f:{body:[],fuel:[],gb:[],dr:[],color:[],brand:[],st:[],av:[],priceMax:200000,yearMin:2014,kmMax:250000,inLimit:true},
+ sort:"rel", liked:[], skipped:[], history:[],
+ sheet:null, detail:null, quiz:null, match:null, matchOn:false, lastQuiz:null,
+ calc:{mode:"car",price:80000,advSum:20000,term:36,pay:2500,advSum2:20000},
+ user:null, limit:null, app:null, contract:null, flow:null, toast:null, bigHint:false, scoreFail:false, cabSched:false, resched:false
+};}
+var S=fresh();
+function car(id){for(var i=0;i<CARS.length;i++)if(CARS[i].id===id)return CARS[i];}
+function has(a,v){return a.indexOf(v)>=0;}
+function filtered(){var f=S.f;return CARS.filter(function(c){
+ if(f.body.length&&!has(f.body,c.body))return false; if(f.fuel.length&&!has(f.fuel,c.fuel))return false;
+ if(f.gb.length&&!has(f.gb,c.gb))return false; if(f.dr.length&&!has(f.dr,c.dr))return false;
+ if(f.color.length&&!has(f.color,c.c))return false; if(f.brand.length&&!has(f.brand,c.b))return false;
+ if(f.st.length&&!has(f.st,c.st))return false; if(f.av.length&&!has(f.av,c.av))return false;
+ if(c.price>f.priceMax||c.y<f.yearMin||c.km>f.kmMax)return false;
+ if(!inBudget(c))return false; if(S.limit&&f.inLimit&&!inLimit(c))return false; return true;});}
+function sorted(list){var l=list.slice(),s=S.sort;
+ if(s==="rel"){if(S.matchOn&&S.match)l.sort(function(a,b){return S.match[b.id].p-S.match[a.id].p;});else l.sort(function(a,b){return (b.ad?1:0)-(a.ad?1:0)||a.id-b.id;});}
+ if(s==="pay")l.sort(function(a,b){return carPay(a)-carPay(b);});
+ if(s==="year")l.sort(function(a,b){return b.y-a.y;});
+ if(s==="km")l.sort(function(a,b){return a.km-b.km;});
+ if(S.mode!=="swipe")l.sort(function(a,b){return (has(S.skipped,a.id)?1:0)-(has(S.skipped,b.id)?1:0);});
+ return l;}
+function swipeQueue(){return sorted(filtered()).filter(function(c){return !has(S.liked,c.id)&&!has(S.skipped,c.id);});}
+
+var QUIZ=[
+ {q:"Для чего нужна машина?",o:[["👨‍👩‍👧","Семья","Дети, поездки, багаж"],["🏙","Город","Пробки, парковка"],["🌲","Трасса и дача","Дальние поездки"],["💼","Работа","Груз, клиенты"]]},
+ {q:"Что для вас важнее?",o:[["💰","Экономия","Расход, обслуживание"],["🛋","Комфорт","Опции, тишина"],["⭐","Статус","Марка, мощность"],["🛡","Надёжность","Ресурс, история"]]},
+ {q:"Комфортный платёж в месяц?",o:[["1","до 1 500 BYN",""],["2","до 2 500 BYN",""],["3","до 4 000 BYN",""],["∞","Не важно",""]]}
+];
+function score(c,a){var s=50,r=[];var bt=BT[c.body];
+ if(a[0]===0){if(bt==="suv"||bt==="van"||bt==="wagon"){s+=16;r.push("Просторный салон");}if(c.seats>5){s+=6;r.push(c.seats+" мест");}}
+ if(a[0]===1){if(bt==="hatch"||bt==="sedan"||(bt==="suv"&&c.eng<=1.6)){s+=14;r.push("Удобна в городе");}if(c.fuel==="Электро"||c.fuel==="Гибрид"){s+=8;r.push(c.fuel==="Электро"?"Электро":"Гибрид");}if(c.eng>3)s-=10;}
+ if(a[0]===2){if(c.dr==="Полный"){s+=14;r.push("Полный привод");}if(bt==="suv"||bt==="pickup"){s+=8;r.push("Клиренс");}}
+ if(a[0]===3){if(bt==="pickup"||bt==="van"){s+=20;r.push("Для груза");}if(c.fuel==="Дизель"){s+=6;r.push("Дизель");}}
+ if(a[1]===0){if(c.fuel==="Электро"||c.fuel==="Гибрид"){s+=12;r.push("Низкий расход");}else if(c.eng&&c.eng<=1.6){s+=8;r.push("Экономичный мотор");}if(c.price<60000)s+=6;}
+ if(a[1]===1){s+=Math.min(14,c.opt.length*2.4);if(c.opt.length>=5)r.push(c.opt.length+" опций комфорта");if(c.gb!=="Механика")s+=3;}
+ if(a[1]===2){if(has(PREMIUM,c.b)||c.m.indexOf("Land")===0){s+=18;r.push("Премиум");}if(c.hp>=200){s+=6;r.push(c.hp+" л.с.");}}
+ if(a[1]===3){if(c.b==="Toyota"){s+=12;r.push("Надёжная марка");}if(c.km===0){s+=10;r.push("Новая");}else if(c.km<60000){s+=5;r.push("Небольшой пробег");}}
+ var lim=[1500,2500,4000,1e9][a[2]],p=carPay(c);if(p<=lim){s+=10;if(lim<1e9)r.push("Платёж в бюджете");}else s-=Math.min(30,(p-lim)/lim*60);
+ if(c.y>=2024)s+=3;
+ return {p:Math.max(42,Math.min(98,Math.round(s))),r:r.slice(0,3)};}
+function runQuiz(){var a=S.quiz.a,m={};CARS.forEach(function(c){m[c.id]=score(c,a);});S.match=m;}
+
+var I={
+ heart:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.8 4.5c2.1 0 3.6 1.1 5.2 3 1.6-1.9 3.1-3 5.2-3 3.8 0 5.9 3.9 4.4 7.3C19.5 16.4 12 21 12 21z"/></svg>',
+ x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+ undo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 010 12h-3"/></svg>',
+ cards:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="3" width="12" height="18" rx="2.5"/><path d="M3 6v12M21 6v12" stroke-linecap="round"/></svg>',
+ list:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/></svg>',
+ grid:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/></svg>',
+ filter:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>',
+ back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',
+ close:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+ car:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 15l2-6a2 2 0 012-1.4h10A2 2 0 0119 9l2 6v3H3z"/><circle cx="7.5" cy="18" r="1.6" fill="currentColor"/><circle cx="16.5" cy="18" r="1.6" fill="currentColor"/></svg>',
+ calc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M8 7h8M8 12h2M14 12h2M8 16h2M14 16h2" stroke-linecap="round"/></svg>',
+ star:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 20.5s-7-4.3-9-8.6C1.6 8.7 3.6 5 7.1 5c2 0 3.4 1 4.9 2.8C13.5 6 14.9 5 16.9 5c3.5 0 5.5 3.7 4.1 6.9-2 4.3-9 8.6-9 8.6z"/></svg>',
+ user:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" stroke-linecap="round"/></svg>',
+ check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+ doc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/></svg>',
+ shield:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/></svg>',
+ chat:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg>',
+ calendar:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4" stroke-linecap="round"/></svg>',
+ spark:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.8 5.2L19 9l-5.2 1.8L12 16l-1.8-5.2L5 9l5.2-1.8zM19 14l.9 2.1L22 17l-2.1.9L19 20l-.9-2.1L16 17l2.1-.9z"/></svg>',
+ play:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l10.5-6.5z"/></svg>'
+};
+function mosaic(cols,rows){var pal=["#530AA7","#241454","#BFAEFD","#6F3CD5","#00B386","transparent","#D9D1FB","transparent"];var h="",seed=7;for(var i=0;i<cols*rows;i++){seed=(seed*37+11)%97;h+='<i style="background:'+pal[seed%pal.length]+';animation-delay:'+(i*25)+'ms"></i>';}return h;}
+function logo(){return '<span class="logo"><span class="neo">neo</span> leasing</span>';}
+
+var app=document.getElementById("app"),fx=null,afterHooks=[];
+function render(){
+ uid=0;var h="";
+ h+=renderTab();
+ h+='<nav class="tabbar" aria-label="Разделы">'+tabBtn("catalog","Подбор",I.car)+tabBtn("calc","Калькулятор",I.calc)+tabBtn("fav","Избранное",I.star,S.liked.length)+tabBtn("cab","Кабинет",I.user,S.app&&!S.contract?"1":0)+'</nav>';
+ if(S.detail)h+=renderDetail();
+ if(S.quiz)h+=renderQuiz();
+ if(S.flow)h+=renderFlow();
+ if(S.sheet)h+='<div class="scrim" data-a="closeSheet"><div class="sheet" role="dialog" aria-modal="true">'+renderSheet()+'</div></div>';
+ if(S.welcome)h+=renderWelcome();
+ if(fx)h+=fx;
+ if(S.toast)h+='<div class="toast" role="status">'+S.toast+'</div>';
+ app.innerHTML=h;fx=null;
+ bindSwipe();var hk=afterHooks;afterHooks=[];hk.forEach(function(f){f();});
+}
+function tabBtn(id,label,ic,badge){return '<button data-a="tab" data-v="'+id+'" aria-current="'+(S.tab===id)+'">'+ic+label+(badge?'<span class="badge">'+badge+'</span>':'')+'</button>';}
+function renderTab(){if(S.tab==="catalog")return S.view==="home"?renderHome():renderCatalog();if(S.tab==="calc")return renderCalc();if(S.tab==="fav")return renderFav();return renderCab();}
+function condText(){var c=S.cond,a=c.advMode==="byn"?fmt(c.advSum)+" BYN":c.advPct+"%";var b=c.btype==="pay"?"до "+fmt(c.pay)+" BYN/мес.":"авто до "+fmt(c.price)+" BYN";return 'Аванс <b>'+a+'</b> · <b>'+myTerm()+' мес.</b> · '+b;}
+function condBar(){return '<button class="cond" data-a="openCond"><span>'+condText()+'</span><span class="edit">Изменить</span></button>';}
+
+function renderWelcome(){return '<div class="welcome"><div class="between">'+logo()+'<button class="iconbtn" style="background:rgba(255,255,255,.15);color:#fff" data-a="openPres" aria-label="Режим презентации" title="Режим презентации">'+I.play+'</button></div><div class="mos">'+mosaic(6,4)+'</div><h2>Выберите машину и оформите лизинг в одном приложении</h2><p>Подбор, расчёт платежа, одобрение, договор и доставка — без визита в офис.</p><button class="btn" data-a="startCond">Подобрать автомобиль</button><button class="btn ghost" style="color:#fff;opacity:.85" data-a="skipWelcome">Пропустить и смотреть каталог</button></div>';}
+
+function renderHome(){
+ var h='<header class="hdr">'+logo()+'<span style="flex:1"></span><button class="iconbtn" data-a="openPres" aria-label="Режим презентации" title="Режим презентации">'+I.play+'</button><button class="iconbtn" data-a="openFilters" aria-label="Фильтры">'+I.filter+'</button></header><div class="scroll"><div class="pad">';
+ h+=condBar();
+ h+='<div class="hero"><div class="mosaic">'+mosaic(4,3)+'</div>';
+ if(S.contract){var cc=car(S.contract.id);h+='<span class="tag ok" style="align-self:flex-start">Договор действует</span><h2>'+cc.b+' '+cc.m+' — ваша</h2><p>Ближайший платёж и документы — в кабинете.</p><button class="btn" data-a="tab" data-v="cab">Открыть кабинет</button>';}
+ else if(S.app){var ca=car(S.app.id);h+='<span class="tag ok" style="align-self:flex-start">Заявка в работе</span><h2>'+ca.b+' '+ca.m+'</h2><p>Статус: '+FLOW[S.app.step].t.toLowerCase()+'.</p><button class="btn" data-a="openFlow">Открыть заявку</button>';}
+ else if(S.limit&&S.limit.shown)h+='<span class="tag ok" style="align-self:flex-start">Одобрено</span><h2>Вам одобрено до '+fmt(S.limit.amount)+' BYN</h2><p>Аванс от '+S.limit.minAdv+'%, срок до '+S.limit.maxTerm+' мес. Показываем машины, которые проходят по этой сумме.</p>';
+ else h+='<h2>Узнайте, сколько вам одобрят</h2><p>2 минуты, вход через МСИ, без справок. Ещё не выбрали машину — начните отсюда.</p><button class="btn" data-a="getLimit">Узнать сумму</button>';
+ h+='</div>';
+ h+='<button class="smart" data-a="openQuiz"><span class="ic">'+I.spark+'</span><span><b>Умный подбор</b><small>'+(S.match?'Подборка готова · открыть':'3 вопроса — и покажем машины, которые подходят именно вам')+'</small></span></button>';
+ h+='<button class="btn" data-a="openCatalog">Смотреть все авто · '+filtered().length+'</button>';
+ h+='<div class="sec-title">Тип кузова</div><div class="tiles">';
+ BODIES.forEach(function(b){var n=CARS.filter(function(c){return c.body===b;}).length;h+='<button class="tile" data-a="pickBody" data-v="'+b+'">'+carSVG(b,"#C9CDD6")+'<span>'+b+'</span><small>'+n+'</small></button>';});
+ h+='</div><div class="sec-title">Марки</div><div class="brands">';
+ brands().forEach(function(b){h+='<button class="chip" data-a="pickBrand" data-v="'+b+'">'+b+'</button>';});
+ return h+'</div><button class="btn sec" data-a="openFilters">Подобрать по параметрам</button></div></div>';
+}
+function brands(){var o=[];CARS.forEach(function(c){if(!has(o,c.b))o.push(c.b);});return o.sort();}
+function quickChips(){var f=S.f,h='<div class="chips">';
+ [["body","Кроссовер"],["body","Седан"],["fuel","Электро"],["gb","Автомат"],["dr","Полный"],["st","Новое"],["av","В наличии"]].forEach(function(x){h+='<button class="chip" data-a="toggle" data-k="'+x[0]+'" data-v="'+x[1]+'" aria-pressed="'+has(f[x[0]],x[1])+'">'+x[1]+'</button>';});
+ return h+'</div>';}
+function activeCount(){var f=S.f,n=0;["body","fuel","gb","dr","color","brand","st","av"].forEach(function(k){n+=f[k].length;});if(f.priceMax<200000)n++;if(f.yearMin>2014)n++;if(f.kmMax<250000)n++;return n;}
+function renderCatalog(){
+ var list=sorted(filtered());
+ var title=S.matchOn?"Ваша подборка":S.f.body.length===1?S.f.body[0]:(S.f.brand.length===1?S.f.brand[0]:"Все автомобили");
+ var h='<header class="hdr"><button class="back" data-a="home" aria-label="Назад">'+I.back+'</button><h1>'+title+'</h1>';
+ h+='<div class="modes" role="group" aria-label="Режим просмотра">'+modeBtn("swipe",I.cards,"Свайпы")+modeBtn("feed",I.list,"Лента")+modeBtn("grid",I.grid,"Плитка")+'</div>';
+ var ac=activeCount();h+='<button class="iconbtn" data-a="openFilters" aria-label="Фильтры">'+I.filter+(ac?'<span class="badge">'+ac+'</span>':'')+'</button></header>';
+ h+='<div class="scroll"><div class="pad" style="gap:10px">'+condBar()+quickChips();
+ if(S.matchOn)h+='<div class="hint">'+I.spark.replace('<svg','<svg width="16" height="16"')+'<span class="sp">Отсортировано по умному подбору</span><button data-a="matchOff">Сбросить</button></div>';
+ if(!list.length)return h+'<div class="empty"><b>Под эти условия машин нет</b>Ослабьте фильтры или увеличьте бюджет в «Моих условиях».<button class="btn sec" data-a="resetFilters">Сбросить фильтры</button></div></div></div>';
+ if(S.mode==="swipe"){
+  var qu=swipeQueue();
+  if(list.length>20&&!S.bigHint&&!S.matchOn)h+='<div class="hint"><span class="sp">Много вариантов — удобнее посмотреть списком?</span><button data-a="mode" data-v="feed">Лента</button><button data-a="dismissHint" aria-label="Скрыть">✕</button></div>';
+  if(!qu.length)h+='<div class="empty"><b>Вы посмотрели все '+list.length+' машин</b>В избранном: '+S.liked.length+'. Пропущенные можно вернуть.<button class="btn" data-a="tab" data-v="fav">Открыть избранное</button><button class="btn sec" data-a="resetSkips">Показать пропущенные снова</button></div>';
+  else{h+='<div class="stack">'+(qu[1]?swipeCard(qu[1],true):'')+swipeCard(qu[0],false)+'</div>';
+   h+='<div class="actions"><button class="round no" data-a="nope" aria-label="Пропустить">'+I.x+'</button><button class="round small undo" data-a="undo" aria-label="Вернуть последнюю"'+(S.history.length?'':' disabled')+'>'+I.undo+'</button><button class="round yes" data-a="like" aria-label="В избранное">'+I.heart+'</button></div>';
+   h+='<p class="center muted small" style="margin:0">'+(list.length-qu.length+1)+' из '+list.length+' · свайп вправо — в избранное</p>';}
+ }else{
+  h+='<div class="sortrow"><span>'+list.length+' авто</span><label>Сортировка <select id="sortSel"><option value="rel"'+(S.sort==="rel"?" selected":"")+'>'+(S.matchOn?"По подбору":"Рекомендуем")+'</option><option value="pay"'+(S.sort==="pay"?" selected":"")+'>Сначала дешевле</option><option value="year"'+(S.sort==="year"?" selected":"")+'>Сначала новее</option><option value="km"'+(S.sort==="km"?" selected":"")+'>Меньше пробег</option></select></label></div>';
+  h+='<div class="'+(S.mode==="feed"?"feed":"grid")+'">';list.forEach(function(c){h+=listCard(c);});h+='</div>';
+ }
+ return h+'</div></div>';
+}
+function modeBtn(v,ic,l){return '<button data-a="mode" data-v="'+v+'" aria-pressed="'+(S.mode===v)+'" aria-label="'+l+'" title="'+l+'">'+ic+'</button>';}
+function tagsFor(c){var h='<div class="tags">';if(S.matchOn&&S.match)h+='<span class="tag match">Подходит на '+S.match[c.id].p+'%</span>';if(c.ad)h+='<span class="tag ad">Реклама</span>';h+=c.av==="Предзаказ"?'<span class="tag pre">Предзаказ ~'+c.wait+' мес.</span>':'<span class="tag ok">В наличии</span>';if(c.st==="Новое")h+='<span class="tag">Новый</span>';return h+'</div>';}
+function specLine(c){var e=c.fuel==="Электро"?"электро, "+c.range+" км":c.eng.toFixed(1)+" л, "+c.fuel.toLowerCase();return c.y+" · "+(c.km?fmt(c.km)+" км":"новый")+" · "+e+" · "+c.hp+" л.с.<br>"+c.gb+" · "+c.dr.toLowerCase()+" привод · "+c.c.toLowerCase()+" · "+c.city;}
+function payBlock(c){return '<div class="price"><div><div class="pay">'+fmt(carPay(c))+' <small>BYN/мес.</small></div>'+advText(c)+'</div><div class="full">'+fmt(c.price)+' BYN<br><span class="terms">цена авто</span></div></div>';}
+function swipeCard(c,back){return '<article class="scard'+(back?' back':'')+'" '+(back?'aria-hidden="true"':'id="top" tabindex="0" data-id="'+c.id+'"')+'><div class="art">'+tagsFor(c)+'<span class="stamp like">НРАВИТСЯ</span><span class="stamp nope">НЕТ</span>'+art(c)+'</div><div class="sbody"><h2>'+c.b+' '+c.m+'</h2><div class="specs">'+specLine(c)+'</div>'+payBlock(c)+'<button class="btn sec" style="padding:9px" data-a="open" data-id="'+c.id+'">Подробнее и расчёт</button></div></article>';}
+function listCard(c){var liked=has(S.liked,c.id),feed=S.mode==="feed";return '<div class="fcard'+(has(S.skipped,c.id)?' dim':'')+'"><button class="heart" data-a="fav" data-id="'+c.id+'" aria-pressed="'+liked+'" aria-label="В избранное">'+I.heart+'</button><button class="open" data-a="open" data-id="'+c.id+'"><div class="art">'+(feed?tagsFor(c):(S.matchOn&&S.match?'<div class="tags"><span class="tag match">'+S.match[c.id].p+'%</span></div>':''))+art(c)+'</div><div class="body"><h3>'+c.b+' '+c.m+'</h3>'+(feed?'<div class="specs">'+specLine(c)+'</div>'+payBlock(c):'<div class="specs">'+c.y+' · '+(c.km?fmt(c.km/1000)+' тыс. км':'новый')+'</div><div class="pay">'+fmt(carPay(c))+' <small>BYN/мес.</small></div><div class="terms">'+fmt(c.price)+' BYN'+(advFor(c).short?' · <span class="terms warn">мало аванса</span>':'')+'</div>')+'</div></button></div>';}
+
+function dCalc(c,d){var adv=Math.min(Math.max(d.advSum,c.price*minPct(c)/100),c.price*MAXPCT/100);return {adv:adv,pct:adv/c.price*100,pay:annuity(c.price-adv,d.term)};}
+function renderDetail(){
+ var c=car(S.detail.id),d=S.detail,liked=has(S.liked,c.id),x=dCalc(c,d),mn=Math.ceil(c.price*minPct(c)/100/500)*500,mx=Math.floor(c.price*MAXPCT/100/500)*500;
+ var h='<section class="overlay zoom" role="dialog" aria-label="'+c.b+' '+c.m+'"><header class="hdr"><button class="back" data-a="closeDetail" aria-label="Назад">'+I.back+'</button><h1>'+c.b+' '+c.m+'</h1><button class="iconbtn" data-a="fav" data-id="'+c.id+'" aria-label="В избранное" style="color:'+(liked?'var(--link)':'var(--muted)')+'">'+I.heart+'</button></header><div class="scroll">';
+ h+='<div class="art detail-art">'+tagsFor(c)+art(c)+'</div><div class="pad">';
+ h+='<div><div class="between" style="align-items:baseline"><span style="font-size:22px;font-weight:800">'+fmt(c.price)+' BYN</span><span class="muted small">≈ '+fmt(c.price/3.25)+' USD</span></div><div class="row muted small" style="margin-top:4px"><span class="dot" style="background:'+c.hex+'"></span>'+c.c+' · '+c.dealer+', '+c.city+'</div></div>';
+ if(S.matchOn&&S.match){var mm=S.match[c.id];h+='<div class="okbox">Подходит вам на '+mm.p+'%'+(mm.r.length?': '+mm.r.join(", ").toLowerCase():'')+'</div>';}
+ h+='<div class="card accent"><div class="between"><b>Лизинговый калькулятор</b><span class="pill">демо</span></div><div class="big" id="dPay" data-v="'+Math.round(x.pay)+'">'+fmt(x.pay)+' <small>BYN/мес.</small></div>';
+ h+='<label class="f">Аванс <span class="val" id="dAdvV">'+fmt(x.adv)+' BYN <small>· '+Math.round(x.pct)+'% от цены</small></span><input type="range" id="dAdv" min="'+mn+'" max="'+mx+'" step="500" value="'+Math.round(x.adv)+'" data-a="dAdv"></label>';
+ h+='<div class="between small muted" style="margin-top:-4px"><span>мин. '+minPct(c)+'% · '+fmt(mn)+'</span><span>макс. '+MAXPCT+'% · '+fmt(mx)+'</span></div>';
+ var need=c.price*minPct(c)/100;
+ if(S.cond.advMode==="byn"&&S.cond.advSum<need)h+='<div class="warnbox">Для этой машины минимальный аванс — '+minPct(c)+'%, это '+fmt(need)+' BYN. В ваших условиях '+fmt(S.cond.advSum)+' BYN, не хватает '+fmt(need-S.cond.advSum)+' BYN. Платёж посчитан с минимальным авансом.</div>';
+ h+='<label class="f">Срок <span class="val" id="dTermV">'+d.term+' мес.</span><input type="range" id="dTerm" min="12" max="'+(S.limit?S.limit.maxTerm:60)+'" step="6" value="'+d.term+'" data-a="dTerm"></label>';
+ h+='<dl class="kv" id="dKv">'+detailKv(c,x,d)+'</dl><button class="btn link" data-a="toggleSched">'+(d.sched?'Скрыть график':'Показать график платежей')+'</button>'+(d.sched?schedTable(c.price,x.adv,d.term,6):'')+'</div>';
+ h+='<div class="card"><button class="switch" role="switch" aria-checked="'+!!d.tco+'" data-a="toggleTco"><span>Полная стоимость владения<br><small class="muted" style="font-weight:400;font-size:12px">Платёж + страховка + топливо + обслуживание</small></span><span class="tg"></span></button><div id="tcoBox">'+(d.tco?tcoHtml(c,x.adv,d.term):'')+'</div></div>';
+ h+='<p class="disc">Предварительный расчёт по демо-ставке '+(RATE*100)+'% годовых, НДС включён. Окончательные условия — в договоре.</p>';
+ h+='<div class="sec-title">Характеристики</div><div class="specgrid">';
+ [["Год",c.y],["Пробег",c.km?fmt(c.km)+" км":"Новый"],["Кузов",c.body],["Цвет",c.c],["Двигатель",c.fuel==="Электро"?"Электро":c.eng.toFixed(1)+" л, "+c.fuel.toLowerCase()],["Мощность",c.hp+" л.с."],["КПП",c.gb],["Привод",c.dr],["Мест",c.seats],[c.fuel==="Электро"?"Запас хода":"Владельцев",c.fuel==="Электро"?c.range+" км":(c.owners||"—")]].forEach(function(r){h+='<div class="spec">'+r[0]+'<b>'+r[1]+'</b></div>';});
+ h+='</div><div class="sec-title">Комплектация</div><div class="opts">';c.opt.forEach(function(o){h+='<span class="opt">'+o+'</span>';});h+='</div>';
+ if(c.av==="Предзаказ")h+='<div class="card"><b>Предзаказ</b><span class="small muted">Машину привезут под вас примерно за '+c.wait+' мес. Статус поставки будет виден в приложении.</span></div>';
+ return h+'</div></div><div class="foot"><button class="btn" data-a="apply" data-id="'+c.id+'" id="dApply">'+(c.av==="Предзаказ"?"Предзаказ в лизинг":"Оформить в лизинг")+' · '+fmt(x.pay)+' BYN/мес.</button></div></section>';
+}
+function detailKv(c,x,d){var tot=x.adv+x.pay*d.term;return '<dt>Аванс</dt><dd>'+fmt(x.adv)+' BYN</dd><dt>Сумма платежей</dt><dd>'+fmt(x.pay*d.term)+' BYN</dd><dt>Всего с авансом</dt><dd>'+fmt(tot)+' BYN</dd><dt>Удорожание</dt><dd>'+fmt(tot-c.price)+' BYN</dd>';}
+function tcoHtml(c,adv,term){var t=tco(c,adv,term),parts=[["Платёж по лизингу",t.pay,"var(--violet)"],["Страховка КАСКО",t.ins,"var(--violet-2)"],[c.fuel==="Электро"?"Зарядка":"Топливо",t.fuel,"var(--mint)"],["Обслуживание и налог",t.serv,"var(--lav)"]];
+ var h='<div style="display:flex;flex-direction:column;gap:10px;margin-top:12px"><div class="between"><span class="muted small">В месяц всего</span><span class="big" style="font-size:24px">'+fmt(t.total)+' BYN</span></div><div class="tco-bar">';
+ parts.forEach(function(p){h+='<i style="width:'+(p[1]/t.total*100)+'%;background:'+p[2]+'"></i>';});h+='</div><div class="legend">';
+ parts.forEach(function(p){h+='<div><span class="sw" style="background:'+p[2]+'"></span>'+p[0]+'<span class="v">'+fmt(p[1])+'</span></div>';});
+ return h+'</div><p class="disc">Оценка при пробеге '+fmt(KM)+' км/мес., '+(c.fuel==="Электро"?'зарядка '+KWH.toFixed(2).replace(".",",")+' BYN/кВт·ч':'топливо '+FUEL.toFixed(2).replace(".",",")+' BYN/л')+'. Демо-значения.</p></div>';}
+function schedTable(price,adv,term,limit){var rows=schedule(price,adv,term);var h='<div class="tbl-wrap"><table><thead><tr><th>№</th><th>Дата</th><th>Возмещение</th><th>Вознагр.</th><th>Платёж</th></tr></thead><tbody>';rows.slice(0,limit||rows.length).forEach(function(r){h+='<tr><td>'+r.n+'</td><td>'+r.date+'</td><td>'+fmt(r.prin)+'</td><td>'+fmt(r.int)+'</td><td>'+fmt(r.total)+'</td></tr>';});return h+'</tbody></table></div>'+(limit&&rows.length>limit?'<p class="disc">Показаны первые '+limit+' из '+rows.length+' платежей.</p>':'');}
+
+function renderCalc(){
+ var k=S.calc,h='<header class="hdr"><h1>Калькулятор лизинга</h1><span class="pill">демо</span><button class="iconbtn" data-a="openPres" aria-label="Режим презентации" title="Режим презентации">'+I.play+'</button></header><div class="scroll"><div class="pad">';
+ h+='<div class="seg" role="group"><button data-a="calcMode" data-v="car" aria-pressed="'+(k.mode==="car")+'">От машины</button><button data-a="calcMode" data-v="pay" aria-pressed="'+(k.mode==="pay")+'">От платежа</button></div>';
+ if(k.mode==="car"){var adv=Math.min(Math.max(k.advSum,k.price*.1),k.price*MAXPCT/100),p=annuity(k.price-adv,k.term);
+  h+='<p class="muted small" style="margin:0">Сколько я буду платить за машину?</p>';
+  h+='<label class="f">Стоимость авто <span class="val" id="cPriceV">'+fmt(k.price)+' BYN</span><input type="range" id="cPrice" min="20000" max="200000" step="1000" value="'+k.price+'" data-a="cPrice"></label>';
+  h+='<label class="f">Аванс <span class="val" id="cAdvV">'+fmt(adv)+' BYN <small>· '+Math.round(adv/k.price*100)+'%</small></span><input type="range" id="cAdv" min="2000" max="98000" step="500" value="'+k.advSum+'" data-a="cAdv"></label>';
+  h+='<label class="f">Срок <span class="val" id="cTermV">'+k.term+' мес.</span><input type="range" id="cTerm" min="12" max="60" step="6" value="'+k.term+'" data-a="cTerm"></label>';
+  h+='<div class="card accent"><span class="muted small">Платёж в месяц</span><div class="big" id="cOut" data-v="'+Math.round(p)+'">'+fmt(p)+' BYN</div><span class="small muted" id="cSub">Всего с авансом '+fmt(adv+p*k.term)+' BYN</span></div>';
+  h+='<button class="btn" data-a="applyCalc">Применить как мои условия</button><button class="btn sec" data-a="showUpTo">Показать авто до '+fmt(k.price)+' BYN</button>';
+ }else{var mp=k.advSum2+k.pay*pv(k.term);
+  h+='<p class="muted small" style="margin:0">Какую машину я потяну?</p>';
+  h+='<label class="f">Комфортный платёж <span class="val" id="pPayV">'+fmt(k.pay)+' BYN/мес.</span><input type="range" id="pPay" min="500" max="6000" step="100" value="'+k.pay+'" data-a="pPay"></label>';
+  h+='<label class="f">Готов внести авансом <span class="val" id="pAdvV">'+fmt(k.advSum2)+' BYN</span><input type="range" id="pAdv" min="5000" max="80000" step="1000" value="'+k.advSum2+'" data-a="pAdv"></label>';
+  h+='<label class="f">Срок <span class="val" id="pTermV">'+k.term+' мес.</span><input type="range" id="pTerm" min="12" max="60" step="6" value="'+k.term+'" data-a="pTerm"></label>';
+  h+='<div class="card accent"><span class="muted small">Можно взять авто стоимостью до</span><div class="big" id="pOut" data-v="'+Math.round(mp)+'">'+fmt(mp)+' BYN</div><span class="small muted" id="pSub">Подходит машин в каталоге: '+CARS.filter(function(c){return c.price<=mp;}).length+'</span></div>';
+  h+='<button class="btn" data-a="showFromPay">Показать эти машины</button>';
+ }
+ return h+'<p class="disc">Расчёт предварительный, по демо-ставке '+(RATE*100)+'% годовых. '+(S.limit?'Учтены ваши одобренные условия.':'После одобрения расчёт станет точным для вас.')+'</p></div></div>';
+}
+
+function renderFav(){
+ var l=S.liked.map(car),h='<header class="hdr"><h1>Избранное и сравнение</h1><button class="iconbtn" data-a="openPres" aria-label="Режим презентации" title="Режим презентации">'+I.play+'</button></header><div class="scroll"><div class="pad">';
+ if(!l.length)return h+'<div class="empty"><b>Здесь пока пусто</b>Свайпните машину вправо или нажмите ♥, чтобы сравнить варианты.<button class="btn" data-a="goCatalog">Перейти к подбору</button></div></div></div>';
+ h+=condBar();
+ var rows=[["Платёж, BYN/мес.",function(c){return fmt(carPay(c));},true],["Аванс, BYN",function(c){var a=advFor(c);return fmt(a.sum)+(a.short?" ⚠":"");}],["Цена, BYN",function(c){return fmt(c.price);}],["Год",function(c){return c.y;}],["Пробег",function(c){return c.km?fmt(c.km)+" км":"новый";}],["Кузов",function(c){return c.body;}],["Цвет",function(c){return c.c;}],["Топливо",function(c){return c.fuel;}],["Двигатель",function(c){return c.fuel==="Электро"?c.range+" км":c.eng.toFixed(1)+" л";}],["Мощность",function(c){return c.hp+" л.с.";}],["КПП",function(c){return c.gb;}],["Привод",function(c){return c.dr;}],["Наличие",function(c){return c.av;}],["Опций",function(c){return c.opt.length;}]];
+ h+='<div class="tbl-wrap"><table class="cmp"><thead><tr><th>'+l.length+' авто</th>';l.forEach(function(c){h+='<th>'+c.b+' '+c.m+'</th>';});h+='</tr></thead><tbody><tr><td></td>';
+ l.forEach(function(c){h+='<td class="art-cell"><button data-a="open" data-id="'+c.id+'" style="border:0;background:none;padding:0"><div class="art">'+art(c)+'</div></button></td>';});h+='</tr>';
+ rows.forEach(function(r){var vals=l.map(r[1]);var diff=vals.some(function(v){return v!==vals[0];});h+='<tr'+(r[2]?' class="pin"':'')+'><td>'+r[0]+'</td>';vals.forEach(function(v){h+='<td'+(diff&&!r[2]?' class="diff"':'')+'>'+v+'</td>';});h+='</tr>';});
+ h+='<tr><td></td>';l.forEach(function(c){h+='<td><button class="btn" style="padding:8px 10px;font-size:13px" data-a="apply" data-id="'+c.id+'">Оформить</button> <button class="btn ghost" style="width:auto;padding:4px;font-size:12px" data-a="fav" data-id="'+c.id+'">Убрать</button></td>';});
+ return h+'</tr></tbody></table></div><p class="disc">Отличающиеся значения выделены. ⚠ — аванса в ваших условиях не хватает до минимума для этой машины.</p></div></div>';
+}
+
+function renderCab(){
+ var h='<header class="hdr"><h1>Кабинет</h1>'+(S.user?'<span class="muted small">'+S.user.name+'</span>':'')+'<button class="iconbtn" data-a="openPres" aria-label="Режим презентации" title="Режим презентации">'+I.play+'</button></header><div class="scroll"><div class="pad">';
+ if(!S.user)return h+'<div class="empty"><b>Войдите, чтобы видеть заявки и договоры</b>Вход и регистрация — через МСИ, данные подтянутся автоматически.<button class="btn" data-a="getLimit">Войти через МСИ</button></div></div></div>';
+ if(S.app&&!S.contract){var c=car(S.app.id);h+='<div class="card"><div class="between"><b>Заявка № NL-1042</b><span class="pill warn">'+FLOW[S.app.step].t+'</span></div><span class="small muted">'+c.b+' '+c.m+' · '+fmt(c.price)+' BYN · '+fmt(S.app.pay)+' BYN/мес.</span><button class="btn" data-a="openFlow">Открыть заявку</button></div>';}
+ if(S.contract){var k=S.contract,cc=car(k.id),rows=schedule(cc.price,k.adv,k.term),paid=k.paid;
+  h+='<div class="card accent"><span class="muted small">Ближайший платёж · '+rows[paid].date+'</span><div class="big">'+fmt(rows[paid].total)+' BYN</div><span class="small muted">Договор № ЛЗ-2026/1042 · '+cc.b+' '+cc.m+'</span><button class="btn" data-a="pay">Оплатить через ЕРИП</button></div>';
+  h+='<div class="card"><div class="between"><b>Договор</b><span class="pill ok">Действует</span></div><dl class="kv"><dt>Автомобиль</dt><dd>'+cc.b+' '+cc.m+'</dd><dt>Стоимость</dt><dd>'+fmt(cc.price)+' BYN</dd><dt>Аванс</dt><dd>'+fmt(k.adv)+' BYN</dd><dt>Срок</dt><dd>'+k.term+' мес.</dd><dt>Оплачено платежей</dt><dd>'+paid+' из '+k.term+'</dd><dt>Остаток</dt><dd>'+fmt(rows[paid].bal+rows[paid].prin)+' BYN</dd></dl><button class="btn link" data-a="toggleCabSched">'+(S.cabSched?'Скрыть график':'График платежей')+'</button>'+(S.cabSched?schedTable(cc.price,k.adv,k.term,12):'')+'</div>';
+  h+='<div class="card" style="gap:0"><button class="list-item" data-a="insurance"><span class="ic">'+I.shield+'</span><span class="grow">КАСКО до 10.11.2026<small>Истекает через 27 дней — продлите заранее</small></span><span class="pill warn">Продлить</span></button><button class="list-item" data-a="reschedule"><span class="ic">'+I.calendar+'</span><span class="grow">Перенести платёж<small>'+(S.resched?'Заявка на перенос отправлена, ответ в течение дня':'Выберите платёж и новую дату')+'</small></span>'+(S.resched?'<span class="pill">В работе</span>':'')+'</button><button class="list-item" data-a="docs"><span class="ic">'+I.doc+'</span><span class="grow">Документы<small>Договор, график, акт, полис</small></span></button><button class="list-item" data-a="support"><span class="ic">'+I.chat+'</span><span class="grow">Обращения<small>Вопрос менеджеру</small></span></button></div>';}
+ if(S.limit&&S.limit.shown&&!S.app&&!S.contract)h+='<div class="card accent"><div class="between"><b>Вам одобрено</b><span class="tag ok">Одобрено</span></div><div class="big">до '+fmt(S.limit.amount)+' BYN</div><span class="small muted">Аванс от '+S.limit.minAdv+'%, срок до '+S.limit.maxTerm+' мес. Действует до 13.11.2026.</span></div>';
+ if(!S.app&&!S.contract)h+='<div class="empty"><b>Договоров пока нет</b>Выберите машину и нажмите «Оформить в лизинг».<button class="btn sec" data-a="goCatalog">Перейти к подбору</button></div>';
+ return h+'<button class="btn ghost" data-a="reset">Сбросить демо и начать заново</button></div></div>';
+}
+
+var FLOW=[
+ {t:"Заявка создана",s:"Дилер подтверждает резерв машины"},
+ {t:"На андеррайтинге",s:"ЛК проверяет заявку"},
+ {t:"Одобрена",s:"Подтвердите условия"},
+ {t:"Договор",s:"Проверьте и подпишите документы"},
+ {t:"Аванс",s:"Оплата через ЕРИП"},
+ {t:"Доставка",s:"Выберите дату и время"},
+ {t:"В пути",s:"Машина едет к вам"},
+ {t:"Передача авто",s:"Осмотр и акт приёма-передачи"}
+];
+function appTerms(c){var d=S.flow&&S.flow.terms;var adv=d?d.adv:advFor(c).sum,term=d?d.term:myTerm();if(S.limit){adv=Math.max(adv,c.price*S.limit.minAdv/100);term=Math.min(term,S.limit.maxTerm);}return {adv:adv,term:term,pay:annuity(c.price-adv,term)};}
+function miniCar(c,t){return '<div class="card" style="flex-direction:row;align-items:center;gap:10px"><div class="art" style="width:96px;height:60px;border-radius:10px;flex:none">'+art(c)+'</div><div><b>'+c.b+' '+c.m+'</b><div class="small muted">'+fmt(t.pay)+' BYN/мес. · аванс '+fmt(t.adv)+' BYN · '+t.term+' мес.</div></div></div>';}
+function renderFlow(){
+ var f=S.flow,cid=f.id||(S.app&&S.app.id),c=cid?car(cid):null,h='<section class="overlay" role="dialog" aria-label="Оформление"><header class="hdr"><button class="back" data-a="closeFlow" aria-label="Закрыть">'+I.back+'</button><h1>'+(f.stage==="app"?"Заявка № NL-1042":"Оформление")+'</h1></header><div class="scroll"><div class="pad">',foot="";
+ if(f.stage==="msi"){
+  if(c)h+=miniCar(c,appTerms(c));
+  h+='<div class="card center" style="align-items:center"><div class="logo" style="font-size:22px">МСИ</div><b>Межбанковская система идентификации</b><span class="small muted">Мы получим ваши ФИО, паспортные данные и адрес. Справки и копии документов не нужны.</span></div><p class="disc center">В демо вход имитируется: будет создан тестовый клиент.</p>';
+  foot='<button class="btn" data-a="msiLogin">Войти через МСИ (демо)</button>';
+ }else if(f.stage==="form"){
+  if(c)h+=miniCar(c,appTerms(c));
+  h+='<div class="card"><b>Данные из МСИ</b><dl class="kv"><dt>ФИО</dt><dd>Иванов Алексей Сергеевич</dd><dt>Дата рождения</dt><dd>12.04.1991</dd><dt>Паспорт</dt><dd>MP ••••••7</dd><dt>Адрес</dt><dd>г. Минск</dd></dl></div>';
+  h+='<label class="f">Место работы<input class="inp" id="fWork" value="ООО «Пример Трейд»"></label><label class="f">Должность<input class="inp" id="fPos" value="Менеджер проектов"></label><label class="f">Доход в месяц, BYN<input class="inp" id="fInc" inputmode="numeric" value="4 200"></label><label class="f">Телефон<input class="inp" id="fTel" value="+375 29 000-00-00"></label>';
+  h+='<label class="check"><input type="checkbox" id="cs1" checked> Согласен на обработку персональных данных</label><label class="check"><input type="checkbox" id="cs2" checked> Согласен на запрос в кредитное бюро</label><label class="check"><input type="checkbox" id="cs3"> Получать новости и предложения</label>';
+  foot='<button class="btn" data-a="sendForm">'+(c?'Отправить заявку на '+c.b+' '+c.m:'Узнать сумму')+'</button>';
+ }else if(f.stage==="scoring"){
+  h+='<div class="empty"><div class="spinner"></div><b>'+(c?'Проверяем заявку на '+c.b+' '+c.m:'Считаем, сколько можем одобрить')+'</b>Обычно это занимает до 15 минут. В демо — пару секунд.</div>';
+ }else if(f.stage==="result"){
+  if(S.scoreFail){h+='<div class="empty"><b>Сейчас не можем одобрить финансирование</b>Попробуйте увеличить аванс или выбрать машину дешевле. Менеджер свяжется с вами и подскажет варианты.</div>';foot='<button class="btn sec" data-a="closeFlow">Понятно</button>';}
+  else if(c){var t=appTerms(c);
+   h+='<div class="ok-ic">'+I.check+'</div><div class="center"><div class="muted small">Предварительно одобрено</div><b style="font-size:21px">'+c.b+' '+c.m+'</b></div>';
+   h+='<div class="art" style="height:150px;border-radius:16px">'+art(c)+'</div>';
+   h+='<div class="card accent"><dl class="kv"><dt>Цена авто</dt><dd>'+fmt(c.price)+' BYN</dd><dt>Аванс</dt><dd>'+fmt(t.adv)+' BYN</dd><dt>Срок</dt><dd>'+t.term+' мес.</dd><dt>Платёж</dt><dd>'+fmt(t.pay)+' BYN/мес.</dd></dl></div>';
+   h+='<p class="disc center">Машина зарезервирована у дилера на 3 дня. Окончательное решение — после проверки андеррайтером, обычно в течение рабочего дня.</p>';
+   foot='<button class="btn" data-a="createApp">Продолжить оформление</button>';
+   afterHooks.push(confetti);
+  }else{h+='<div class="ok-ic">'+I.check+'</div><div class="center"><div class="muted small">Вам предварительно одобрено</div><div class="big">до '+fmt(S.limit.amount)+' BYN</div><div class="small muted">Аванс от '+S.limit.minAdv+'% · срок до '+S.limit.maxTerm+' мес. · действует до 13.11.2026</div></div><p class="disc center">Каталог покажет только те машины, которые проходят по этой сумме. Когда выберете — одобрим конкретную машину.</p>';foot='<button class="btn" data-a="limitToCatalog">Смотреть подходящие машины</button>';afterHooks.push(confetti);}
+ }else if(f.stage==="app"){
+  var st=S.app.step;h+=miniCar(c,S.app);
+  if(st===6)h+=mapHtml();
+  h+='<ol class="steps">';FLOW.forEach(function(x,i){h+='<li class="'+(i<st?'done':i===st?'now':'todo')+'"><span class="n">'+(i<st?'✓':i+1)+'</span><div><div class="t">'+x.t+'</div><div class="s">'+(i===4&&c.av==="Предзаказ"?"Оплата через ЕРИП, затем поставка ~"+c.wait+" мес.":x.s)+'</div></div></li>';});h+='</ol>';
+  h+=stepPanel(st,c);foot=stepFoot(st);
+  if(st===6)afterHooks.push(runMap);
+ }else if(f.stage==="done"){
+  h+='<div class="ok-ic">'+I.check+'</div><div class="center"><b style="font-size:20px">Машина ваша!</b><p class="muted small">Акт подписан, договор действует. График платежей, документы и полис — в кабинете.</p></div><div class="art" style="height:160px;border-radius:16px">'+art(c)+'</div>';
+  foot='<button class="btn" data-a="toCab">Перейти в кабинет</button>';afterHooks.push(confetti);
+ }
+ return h+'</div></div>'+(foot?'<div class="foot">'+foot+'</div>':'')+'</section>';
+}
+function stepPanel(st,c){
+ if(st===0||st===1)return '<p class="disc">Сейчас заявку обрабатывает '+(st===0?'дилер':'андеррайтер ЛК')+'. В реальном приложении статус обновится сам и придёт уведомление.</p>';
+ if(st===2)return '<div class="card accent"><b>Одобрено на '+c.b+' '+c.m+'</b><span class="small muted">Условия без изменений. Подтвердите — подготовим договор.</span></div>';
+ if(st===3)return '<div class="card" style="gap:0">'+["Договор лизинга № ЛЗ-2026/1042","График платежей","Спецификация автомобиля"].map(function(d){return '<div class="list-item"><span class="ic">'+I.doc+'</span><span class="grow">'+d+'<small>PDF · просмотреть</small></span></div>';}).join("")+'</div><p class="disc">Способ подписи уточняется юристами (раздел 4.8 ТЗ). Запасной вариант — подпись на бумаге при доставке.</p>';
+ if(st===4)return '<div class="card accent"><span class="muted small">К оплате авансом</span><div class="big">'+fmt(S.app.adv)+' BYN</div><dl class="kv"><dt>Система</dt><dd>ЕРИП</dd><dt>Услуга</dt><dd>Neo Leasing → Аванс</dd><dt>Номер договора</dt><dd>ЛЗ-2026/1042</dd></dl></div>';
+ if(st===5){var days=["Пт, 16 окт","Сб, 17 окт","Пн, 19 окт"],slots=["10:00–12:00","12:00–14:00","16:00–18:00"],h='<label class="f">Адрес доставки<input class="inp" id="addr" value="г. Минск, ул. Примерная, 1"></label><div class="sec-title">Дата</div><div class="slots">';days.forEach(function(d,i){h+='<button class="chip" data-a="pickDay" data-v="'+i+'" aria-pressed="'+(S.app.day===i)+'">'+d+'</button>';});h+='</div><div class="sec-title">Время</div><div class="slots">';slots.forEach(function(d,i){h+='<button class="chip" data-a="pickSlot" data-v="'+i+'" aria-pressed="'+(S.app.slot===i)+'">'+d+'</button>';});return h+'</div>';}
+ if(st===7)return '<div class="card"><b>Логист на месте</b><span class="small muted">Осмотрите машину, проверьте комплектность и подпишите акт приёма-передачи. Замечания можно внести в акт.</span><label class="check"><input type="checkbox" id="actOk" checked> Машина осмотрена, замечаний нет</label></div>';
+ return "";
+}
+function stepFoot(st){
+ if(st===0||st===1)return '<button class="demo" data-a="next">Следующий шаг (демо)</button>';
+ if(st===2)return '<button class="btn" data-a="next">Подтвердить условия</button>';
+ if(st===3)return '<button class="btn" data-a="next">Подписать договор</button>';
+ if(st===4)return '<button class="btn" data-a="next">Я оплатил (демо)</button>';
+ if(st===5)return '<button class="btn" data-a="next"'+(S.app.day==null||S.app.slot==null?' disabled':'')+'>Подтвердить доставку</button>';
+ if(st===6)return '<button class="demo" data-a="next">Пропустить ожидание (демо)</button>';
+ if(st===7)return '<button class="btn" data-a="finish">Подписать акт</button>';
+ return "";
+}
+
+var ROUTE="M30 196 L30 150 L120 150 L120 96 L210 96 L210 54 L300 54 L300 34",mapRaf=null;
+function mapHtml(){
+ var h='<div class="map"><div class="eta"><span id="eta">Будет через 12 мин</span><small>Логист: Сергей · Neo Leasing</small></div><svg viewBox="0 0 340 220" role="img" aria-label="Карта доставки"><rect width="340" height="220" fill="var(--map-bg)"/>';
+ [[44,108,64,30],[136,110,60,30],[44,166,64,40],[136,166,60,40],[226,70,60,14],[136,8,60,74],[226,110,60,30],[316,8,24,30]].forEach(function(b){h+='<rect x="'+b[0]+'" y="'+b[1]+'" width="'+b[2]+'" height="'+b[3]+'" rx="4" fill="var(--map-block)"/>';});
+ h+='<rect x="44" y="8" width="64" height="74" rx="6" fill="var(--map-park)"/><rect x="226" y="160" width="104" height="50" rx="6" fill="var(--map-park)"/>';
+ ["M0 150 H340","M0 96 H340","M0 54 H340","M30 0 V220","M120 0 V220","M210 0 V220","M300 0 V220"].forEach(function(p){h+='<path d="'+p+'" stroke="var(--map-road)" stroke-width="12"/>';});
+ h+='<path d="'+ROUTE+'" fill="none" stroke="var(--lav)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity=".6"/>';
+ h+='<path id="route" d="'+ROUTE+'" fill="none" stroke="var(--violet)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>';
+ h+='<g transform="translate(300 34)"><circle r="14" fill="var(--mint)" opacity=".25"/><circle r="7" fill="var(--mint)"/></g>';
+ h+='<g id="mcar" transform="translate(30 196)"><circle r="12" fill="var(--violet)" stroke="#fff" stroke-width="3"/><path d="M-6 2 l1.5-4.5 h9 l1.5 4.5 v3 h-12z" fill="#fff"/></g></svg></div>';
+ return h;}
+function runMap(){var path=document.getElementById("route"),mc=document.getElementById("mcar"),eta=document.getElementById("eta");if(!path||!mc)return;cancelAnimationFrame(mapRaf);
+ var L=path.getTotalLength?path.getTotalLength():0,dur=9000,t0=null,reduce=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+ if(L){path.style.strokeDasharray=L;path.style.strokeDashoffset=0;}
+ function frame(ts){if(!document.getElementById("mcar"))return;if(t0===null)t0=ts;var k=reduce?1:Math.min(1,(ts-t0)/dur);var pt=L?path.getPointAtLength(L*k):{x:300,y:34};mc.setAttribute("transform","translate("+pt.x+" "+pt.y+")");if(L)path.style.strokeDashoffset=-L*k;var m=Math.ceil(12*(1-k));eta.textContent=m>0?"Будет через "+m+" мин":"Логист на месте";
+  if(k<1)mapRaf=requestAnimationFrame(frame);else setTimeout(function(){if(S.app&&S.app.step===6&&S.flow){S.app.step=7;toast("Логист приехал — осмотрите машину");}},700);}
+ mapRaf=requestAnimationFrame(frame);}
+
+function renderQuiz(){
+ var q=S.quiz,h='<section class="overlay zoom" role="dialog" aria-label="Умный подбор"><header class="hdr"><button class="back" data-a="'+(q.step>0&&q.step<3?'quizBack':'closeQuiz')+'" aria-label="Назад">'+I.back+'</button><h1>Умный подбор</h1><button class="iconbtn" data-a="closeQuiz" aria-label="Закрыть">'+I.close+'</button></header><div class="scroll"><div class="pad">';
+ if(q.step<3){var Q=QUIZ[q.step];h+='<div class="progress"><i style="width:'+((q.step+1)/3*100)+'%"></i></div><span class="muted small">Вопрос '+(q.step+1)+' из 3</span><h2 style="margin:0;font-size:22px">'+Q.q+'</h2><div class="qopts">';
+  Q.o.forEach(function(o,i){h+='<button class="qopt" data-a="quizAns" data-v="'+i+'"><span>'+o[0]+'</span>'+o[1]+(o[2]?'<small>'+o[2]+'</small>':'')+'</button>';});
+  return h+'</div><p class="disc">Подбор учитывает ваши ответы и «Мои условия». В полной версии — ещё и то, какие машины вы лайкаете.</p></div></div></section>';}
+ var top=CARS.slice().sort(function(a,b){return S.match[b.id].p-S.match[a.id].p;}).slice(0,5);
+ h+='<div class="okbox">Готово! 5 машин, которые подходят вам лучше всего</div>';
+ top.forEach(function(c){var m=S.match[c.id];h+='<button class="mrow" data-a="open" data-id="'+c.id+'"><div class="art">'+art(c)+'</div><div class="grow"><b>'+c.b+' '+c.m+'</b><span class="small muted">'+fmt(carPay(c))+' BYN/мес. · '+fmt(c.price)+' BYN</span><div class="reason">'+m.r.map(function(r){return '<span>'+r+'</span>';}).join("")+'</div></div><span class="pct">'+m.p+'%</span></button>';});
+ return h+'</div></div><div class="foot"><button class="btn" data-a="quizShow">Смотреть всю подборку свайпами</button><button class="btn ghost" data-a="quizRestart">Пройти заново</button></div></section>';
+}
+
+function renderSheet(){
+ if(S.sheet==="cond")return condSheet();
+ if(S.sheet==="filters")return filterSheet();
+ if(S.sheet==="pres")return presSheet();
+ if(S.sheet==="pay"){var k=S.contract,cc=car(k.id),r=schedule(cc.price,k.adv,k.term)[k.paid];return sheetHdr("Оплата через ЕРИП")+'<div class="pad"><div class="card accent"><span class="muted small">Сумма</span><div class="big">'+fmt(r.total)+' BYN</div></div><dl class="kv"><dt>Путь в ЕРИП</dt><dd>Лизинг → Neo Leasing</dd><dt>Номер договора</dt><dd>ЛЗ-2026/1042</dd></dl><p class="disc">В приложении банка откройте ЕРИП и найдите услугу по пути выше. В демо можно отметить оплату сразу.</p></div><div class="foot"><button class="btn" data-a="markPaid">Отметить оплату (демо)</button></div>';}
+ if(S.sheet==="resched")return sheetHdr("Перенос платежа")+'<div class="pad"><label class="f">Какой платёж<select class="inp" id="rsWhich"><option>Ближайший платёж</option><option>Следующий за ним</option></select></label><label class="f">Новая дата<input class="inp" id="rsDate" type="date" value="2026-11-25"></label><label class="f">Причина<input class="inp" id="rsWhy" value="Задержка зарплаты"></label></div><div class="foot"><button class="btn" data-a="sendResched">Отправить заявку</button></div>';
+ if(S.sheet==="info")return sheetHdr(S.sheetTitle)+'<div class="pad"><p class="muted" style="margin:0">'+S.sheetText+'</p></div><div class="foot"><button class="btn sec" data-a="closeSheet">Понятно</button></div>';
+ return "";
+}
+function sheetHdr(t,extra){return '<header class="hdr"><h1>'+t+'</h1>'+(extra||'')+'<button class="back" data-a="closeSheet" aria-label="Закрыть">'+I.close+'</button></header>';}
+function condSheet(){var c=S.cond;
+ var h=sheetHdr("Мои условия")+'<div class="scroll"><div class="pad">';
+ h+='<p class="muted small" style="margin:0">От этих условий считается платёж на каждой карточке. Их можно поменять в любой момент.</p>';
+ h+='<div class="f"><div class="between"><span>Сколько готовы внести авансом</span><div class="seg mini"><button data-a="advMode" data-v="byn" aria-pressed="'+(c.advMode==="byn")+'">BYN</button><button data-a="advMode" data-v="pct" aria-pressed="'+(c.advMode==="pct")+'">%</button></div></div>';
+ if(c.advMode==="byn")h+='<span class="val" id="sAdvV">'+fmt(c.advSum)+' BYN</span><input type="range" id="sAdv" min="2000" max="80000" step="500" value="'+c.advSum+'" data-a="sAdvSum">';
+ else h+='<span class="val" id="sAdvV">'+c.advPct+'% от цены авто</span><input type="range" id="sAdv" min="10" max="49" value="'+c.advPct+'" data-a="sAdvPct">';
+ h+='</div><label class="f">Срок <span class="val" id="sTermV">'+c.term+' мес.</span><input type="range" id="sTerm" min="12" max="'+(S.limit?S.limit.maxTerm:60)+'" step="6" value="'+c.term+'" data-a="sTerm"></label>';
+ h+='<div class="f">Бюджет задаю через</div><div class="seg"><button data-a="btype" data-v="pay" aria-pressed="'+(c.btype==="pay")+'">Платёж в месяц</button><button data-a="btype" data-v="price" aria-pressed="'+(c.btype==="price")+'">Цену авто</button></div>';
+ if(c.btype==="pay")h+='<label class="f">Платёж не больше <span class="val" id="sPayV">'+fmt(c.pay)+' BYN/мес.</span><input type="range" id="sPay" min="500" max="6000" step="100" value="'+c.pay+'" data-a="sPay"></label>';
+ else h+='<label class="f">Цена авто до <span class="val" id="sPriceV">'+fmt(c.price)+' BYN</span><input type="range" id="sPrice" min="20000" max="200000" step="1000" value="'+c.price+'" data-a="sPrice"></label>';
+ return h+'<div class="card accent" id="sSum">'+condSummary()+'</div></div></div><div class="foot"><button class="btn" data-a="saveCond">Показать машины</button></div>';}
+function condSummary(){var n=filtered().length;return (S.cond.btype==="pay"?'<span class="muted small">С вашим авансом и платежом можно взять авто до</span><div class="big" style="font-size:24px">'+fmt(budgetMax())+' BYN</div>':'<span class="muted small">Ваш бюджет на машину</span><div class="big" style="font-size:24px">до '+fmt(S.cond.price)+' BYN</div>')+'<span class="small muted">Подходит машин: <b>'+n+'</b> из '+CARS.length+'</span>';}
+function fchips(key,vals,swatch){var h='<div class="chips">';vals.forEach(function(v){h+='<button class="chip" data-a="toggle" data-k="'+key+'" data-v="'+v+'" aria-pressed="'+has(S.f[key],v)+'">'+(swatch?'<span class="dot" style="background:'+COLORS[v]+'"></span>':'')+v+'</button>';});return h+'</div>';}
+function filterSheet(){var f=S.f;
+ var h=sheetHdr("Фильтры",'<button class="btn ghost" style="width:auto" data-a="resetFilters">Сбросить</button>')+'<div class="scroll"><div class="pad filt">';
+ if(S.limit)h+='<label class="check"><input type="checkbox" id="fLimit"'+(f.inLimit?' checked':'')+'> Только машины в пределах одобренной суммы</label>';
+ h+='<h4>Состояние</h4>'+fchips("st",["Новое","С пробегом"])+'<h4>Наличие</h4>'+fchips("av",["В наличии","Предзаказ"]);
+ h+='<h4>Марка</h4>'+fchips("brand",brands())+'<h4>Тип кузова</h4>'+fchips("body",BODIES)+'<h4>Цвет кузова</h4>'+fchips("color",Object.keys(COLORS),true);
+ h+='<h4>Топливо</h4>'+fchips("fuel",["Бензин","Дизель","Гибрид","Электро"])+'<h4>Коробка передач</h4>'+fchips("gb",["Механика","Автомат","Робот","Вариатор"])+'<h4>Привод</h4>'+fchips("dr",["Передний","Задний","Полный"]);
+ h+='<label class="f"><h4>Цена авто до</h4><span class="val" id="fPriceV">'+fmt(f.priceMax)+' BYN</span><input type="range" id="fPrice" min="20000" max="200000" step="5000" value="'+f.priceMax+'" data-a="fPrice"></label>';
+ h+='<label class="f"><h4>Год выпуска от</h4><span class="val" id="fYearV">'+f.yearMin+'</span><input type="range" id="fYear" min="2014" max="2026" value="'+f.yearMin+'" data-a="fYear"></label>';
+ h+='<label class="f"><h4>Пробег до</h4><span class="val" id="fKmV">'+fmt(f.kmMax)+' км</span><input type="range" id="fKm" min="0" max="250000" step="10000" value="'+f.kmMax+'" data-a="fKm"></label>';
+ return h+'<p class="disc">В полной версии — ещё объём и мощность двигателя, салон, опции комплектации и другие параметры (раздел 4.3.1 ТЗ).</p></div></div><div class="foot"><button class="btn" data-a="applyFilters" id="fApply">Показать '+filtered().length+' авто</button></div>';}
+function presSheet(){var items=[["1","С самого начала","Приветствие и «Мои условия»","pres1"],["2","Каталог — свайпы","Сразу к выбору машины","pres2"],["3","Умный подбор","3 вопроса и подборка","pres3"],["4","Клиент ещё не выбрал машину","Узнал сумму одобрения, смотрит подходящие","pres4"],["5","Подписание договора","Заявка на машину одобрена, документы готовы","pres5"],["6","Доставка на карте","Машина едет к клиенту","pres6"],["7","Кабинет с договором","График, оплата, страховка","pres7"]];
+ var h=sheetHdr("Режим презентации")+'<div class="scroll"><div class="pad"><p class="muted small" style="margin:0">Панель для ведущего: переход к любому моменту сценария в один тап, без заполнения анкет на показе.</p><div class="pres">';
+ items.forEach(function(x){h+='<button data-a="'+x[3]+'"><i>'+x[0]+'</i><span>'+x[1]+'<small>'+x[2]+'</small></span></button>';});
+ return h+'</div><button class="switch" role="switch" aria-checked="'+S.scoreFail+'" data-a="toggleFail"><span>Показывать отказ при проверке<br><small class="muted" style="font-weight:400;font-size:12px">Чтобы продемонстрировать сценарий отказа</small></span><span class="tg"></span></button></div></div>';}
+
+function confetti(){if(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches)return;var dev=document.getElementById("device");if(!dev||!dev.clientWidth)return;var cv=document.createElement("canvas");cv.className="confetti";dev.appendChild(cv);var W=cv.width=dev.clientWidth*2,H=cv.height=dev.clientHeight*2,ctx=cv.getContext("2d");if(!ctx){cv.remove();return;}
+ var cols=["#530AA7","#BFAEFD","#00B386","#6F3CD5","#FFD166"],ps=[];for(var i=0;i<110;i++)ps.push({x:W/2+(Math.random()-.5)*W*.3,y:H*.32,vx:(Math.random()-.5)*26,vy:-Math.random()*26-8,s:Math.random()*10+6,r:Math.random()*6,vr:(Math.random()-.5)*.4,c:cols[i%5]});
+ var t=0;(function f(){t++;ctx.clearRect(0,0,W,H);ps.forEach(function(p){p.vy+=.9;p.x+=p.vx;p.y+=p.vy;p.vx*=.99;p.r+=p.vr;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.r);ctx.fillStyle=p.c;ctx.globalAlpha=Math.max(0,1-t/90);ctx.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);ctx.restore();});if(t<90)requestAnimationFrame(f);else cv.remove();})();}
+function tweenNum(el,to,suffix){if(!el)return;var from=+el.dataset.v||to;el.dataset.v=Math.round(to);var t0=null,d=260;function step(ts){if(t0===null)t0=ts;var k=Math.min(1,(ts-t0)/d),e=1-Math.pow(1-k,3);el.innerHTML=fmt(from+(to-from)*e)+suffix;if(k<1)requestAnimationFrame(step);}requestAnimationFrame(step);}
+function celebrate(c){fx='<div class="match" aria-hidden="true"><div class="m"><div class="h">'+I.heart+'</div><b>'+c.b+' '+c.m+'</b><span class="small muted">в избранном · '+fmt(carPay(c))+' BYN/мес.</span></div></div>';}
+
+var toastT;
+function toast(t){S.toast=t;render();clearTimeout(toastT);toastT=setTimeout(function(){S.toast=null;render();},2300);}
+function like(id){if(!has(S.liked,id))S.liked.push(id);var i=S.skipped.indexOf(id);if(i>=0)S.skipped.splice(i,1);S.history.push({id:id,t:"like"});}
+function nope(id){if(!has(S.skipped,id))S.skipped.push(id);S.history.push({id:id,t:"nope"});}
+function openDetail(id){var c=car(id);S.detail={id:id,advSum:advFor(c).sum,term:myTerm(),sched:false,tco:false};}
+function startApply(id){
+ var c=car(id),d=S.detail&&S.detail.id===id?dCalc(c,S.detail):null;var terms=d?{adv:d.adv,term:S.detail.term}:{adv:advFor(c).sum,term:myTerm()};
+ S.detail=null;S.quiz=null;
+ if(S.app&&!S.contract){S.flow={stage:"app"};toast("У вас уже есть активная заявка");return true;}
+ S.flow={stage:S.user?"form":"msi",id:id,terms:terms};
+}
+function setDemoUser(){S.welcome=false;S.user={name:"Алексей И."};S.detail=null;S.quiz=null;}
+function demoApp(step){setDemoUser();S.limit={amount:140000,minAdv:20,maxTerm:60,shown:false};var c=car(5),adv=Math.max(S.cond.advSum,c.price*.2);S.app={id:5,step:step,adv:adv,term:36,pay:annuity(c.price-adv,36),day:step>5?0:null,slot:step>5?1:null};S.contract=null;S.flow={stage:"app"};S.tab="catalog";S.view="home";S.sheet=null;}
+var A={
+ tab:function(v){S.tab=v;},
+ startCond:function(){S.welcome=false;S.sheet="cond";},
+ skipWelcome:function(){S.welcome=false;},
+ openCond:function(){S.sheet="cond";},
+ closeSheet:function(){S.sheet=null;},
+ saveCond:function(){S.sheet=null;S.tab="catalog";S.view="catalog";},
+ btype:function(v){S.cond.btype=v;},
+ advMode:function(v){S.cond.advMode=v;},
+ home:function(){S.view="home";},
+ openCatalog:function(){S.view="catalog";},
+ goCatalog:function(){S.tab="catalog";S.view="catalog";},
+ pickBody:function(v){S.f.body=[v];S.f.brand=[];S.view="catalog";},
+ pickBrand:function(v){S.f.brand=[v];S.f.body=[];S.view="catalog";},
+ openFilters:function(){S.sheet="filters";},
+ applyFilters:function(){S.sheet=null;S.tab="catalog";S.view="catalog";},
+ resetFilters:function(){S.f=fresh().f;},
+ toggle:function(v,el){var a=S.f[el.dataset.k],i=a.indexOf(v);if(i>=0)a.splice(i,1);else a.push(v);},
+ mode:function(v){S.mode=v;if(v!=="swipe")S.bigHint=true;},
+ dismissHint:function(){S.bigHint=true;},
+ like:function(){var q=swipeQueue();if(q[0]){like(q[0].id);celebrate(q[0]);}},
+ nope:function(){var q=swipeQueue();if(q[0])nope(q[0].id);},
+ undo:function(){var x=S.history.pop();if(!x)return;var a=x.t==="like"?S.liked:S.skipped,i=a.indexOf(x.id);if(i>=0)a.splice(i,1);},
+ resetSkips:function(){S.skipped=[];S.history=[];},
+ fav:function(v,el){var id=+el.dataset.id,i=S.liked.indexOf(id);if(i>=0)S.liked.splice(i,1);else{like(id);celebrate(car(id));}},
+ open:function(v,el){openDetail(+el.dataset.id);},
+ closeDetail:function(){S.detail=null;},
+ toggleSched:function(){S.detail.sched=!S.detail.sched;},
+ toggleTco:function(){S.detail.tco=!S.detail.tco;},
+ apply:function(v,el){return startApply(+el.dataset.id);},
+ getLimit:function(){S.flow={stage:S.user?"form":"msi",id:null};},
+ msiLogin:function(){S.user={name:"Алексей И."};S.flow.stage="form";},
+ toggleFail:function(){S.scoreFail=!S.scoreFail;},
+ sendForm:function(){var a=document.getElementById("cs1"),b=document.getElementById("cs2");if(!a.checked||!b.checked){toast("Отметьте оба обязательных согласия");return true;}S.flow.stage="scoring";render();
+  setTimeout(function(){if(!S.flow||S.flow.stage!=="scoring")return;if(!S.scoreFail){S.limit={amount:140000,minAdv:20,maxTerm:60,shown:!S.flow.id};}S.flow.stage="result";render();},1700);return true;},
+ limitToCatalog:function(){S.flow=null;S.tab="catalog";S.view="catalog";},
+ createApp:function(){var c=car(S.flow.id),t=appTerms(c);S.app={id:c.id,step:0,adv:t.adv,term:t.term,pay:t.pay,day:null,slot:null};S.flow={stage:"app"};toast("Заявка отправлена, машина зарезервирована");return true;},
+ openFlow:function(){S.flow={stage:"app"};},
+ closeFlow:function(){S.flow=null;cancelAnimationFrame(mapRaf);},
+ next:function(){S.app.step=Math.min(S.app.step+1,7);var m=["","Андеррайтер получил заявку","Заявка одобрена","Договор подписан","Аванс получен","Доставка подтверждена","Машина выехала к вам","Логист на месте"][S.app.step];if(m){toast(m);return true;}},
+ pickDay:function(v){S.app.day=+v;},
+ pickSlot:function(v){S.app.slot=+v;},
+ finish:function(){S.contract={id:S.app.id,adv:S.app.adv,term:S.app.term,paid:0};S.flow={stage:"done",id:S.app.id};S.app=null;},
+ toCab:function(){S.flow=null;S.tab="cab";},
+ pay:function(){S.sheet="pay";},
+ markPaid:function(){S.contract.paid=Math.min(S.contract.paid+1,S.contract.term-1);S.sheet=null;toast("Платёж отмечен как оплаченный");return true;},
+ toggleCabSched:function(){S.cabSched=!S.cabSched;},
+ reschedule:function(){S.sheet="resched";},
+ sendResched:function(){S.resched=true;S.sheet=null;toast("Заявка на перенос отправлена менеджеру");return true;},
+ insurance:function(){S.sheet="info";S.sheetTitle="Продление КАСКО";S.sheetText="Стоимость продления — 2 340 BYN (демо). Оплата через ЕРИП по номеру договора, новый полис появится в разделе «Документы» после оплаты.";},
+ docs:function(){S.sheet="info";S.sheetTitle="Документы";S.sheetText="Договор лизинга № ЛЗ-2026/1042, график платежей, акт приёма-передачи, полис КАСКО, копии документов на автомобиль. В демо файлы не прикреплены.";},
+ support:function(){S.sheet="info";S.sheetTitle="Обращения";S.sheetText="Здесь клиент пишет менеджеру: досрочное погашение, страховка, документы, ДТП. Ответ приходит в приложение и push-уведомлением.";},
+ applyCalc:function(){var k=S.calc;S.cond.advMode="byn";S.cond.advSum=k.advSum;S.cond.term=k.term;S.cond.btype="price";S.cond.price=k.price;toast("Условия применены к каталогу");return true;},
+ showUpTo:function(){var k=S.calc;S.cond.advMode="byn";S.cond.advSum=k.advSum;S.cond.term=k.term;S.cond.btype="price";S.cond.price=k.price;S.tab="catalog";S.view="catalog";},
+ showFromPay:function(){var k=S.calc;S.cond.advMode="byn";S.cond.advSum=k.advSum2;S.cond.term=k.term;S.cond.btype="pay";S.cond.pay=k.pay;S.tab="catalog";S.view="catalog";},
+ calcMode:function(v){S.calc.mode=v;},
+ openQuiz:function(){S.quiz=S.match?{step:3,a:S.lastQuiz||[]}:{step:0,a:[]};},
+ closeQuiz:function(){S.quiz=null;},
+ quizBack:function(){S.quiz.step--;S.quiz.a.pop();},
+ quizAns:function(v){S.quiz.a.push(+v);S.quiz.step++;if(S.quiz.step===3){runQuiz();S.lastQuiz=S.quiz.a.slice();afterHooks.push(confetti);}},
+ quizRestart:function(){S.quiz={step:0,a:[]};},
+ quizShow:function(){S.quiz=null;S.matchOn=true;S.sort="rel";S.mode="swipe";S.skipped=[];S.tab="catalog";S.view="catalog";},
+ matchOff:function(){S.matchOn=false;},
+ openPres:function(){S.sheet="pres";},
+ pres1:function(){var f=S.scoreFail;S=fresh();S.scoreFail=f;},
+ pres2:function(){S.welcome=false;S.sheet=null;S.tab="catalog";S.view="catalog";S.mode="swipe";S.flow=null;S.detail=null;S.quiz=null;},
+ pres3:function(){S.welcome=false;S.sheet=null;S.flow=null;S.detail=null;S.tab="catalog";S.view="home";S.quiz={step:0,a:[]};},
+ pres4:function(){setDemoUser();S.app=null;S.contract=null;S.limit={amount:140000,minAdv:20,maxTerm:60,shown:true};S.sheet=null;S.flow=null;S.tab="catalog";S.view="home";},
+ pres5:function(){demoApp(3);},
+ pres6:function(){demoApp(6);},
+ pres7:function(){setDemoUser();S.limit={amount:140000,minAdv:20,maxTerm:60,shown:false};var c=car(5);S.contract={id:5,adv:Math.max(S.cond.advSum,c.price*.2),term:36,paid:2};S.app=null;S.flow=null;S.sheet=null;S.tab="cab";},
+ reset:function(){S=fresh();}
+};
+
+app.addEventListener("click",function(e){
+ var el=e.target.closest("[data-a]");if(!el)return;
+ if(el.classList.contains("scrim")&&e.target!==el)return;
+ var a=el.dataset.a;if(!A[a]||el.tagName==="INPUT"||el.tagName==="SELECT")return;
+ e.stopPropagation();if(A[a](el.dataset.v,el)===true)return;render();
+});
+app.addEventListener("change",function(e){var el=e.target;
+ if(el.id==="sortSel"){S.sort=el.value;render();}
+ if(el.id==="fLimit"){S.f.inLimit=el.checked;updFilterCount();}
+});
+app.addEventListener("input",function(e){var el=e.target,v=+el.value,a=el.dataset.a;if(!a)return;
+ var t=function(id,s){var x=document.getElementById(id);if(x)x.innerHTML=s;};
+ if(a==="dAdv"||a==="dTerm"){var d=S.detail,c=car(d.id);if(a==="dAdv")d.advSum=v;else d.term=v;var x=dCalc(c,d);t("dAdvV",fmt(x.adv)+' BYN <small>· '+Math.round(x.pct)+'% от цены</small>');t("dTermV",d.term+" мес.");tweenNum(document.getElementById("dPay"),x.pay,' <small>BYN/мес.</small>');t("dKv",detailKv(c,x,d));if(d.tco)t("tcoBox",tcoHtml(c,x.adv,d.term));var ap=document.getElementById("dApply");if(ap)ap.textContent=(c.av==="Предзаказ"?"Предзаказ в лизинг":"Оформить в лизинг")+" · "+fmt(x.pay)+" BYN/мес.";return;}
+ var k=S.calc;
+ if(a==="cPrice"||a==="cAdv"||a==="cTerm"){if(a==="cPrice")k.price=v;if(a==="cAdv")k.advSum=v;if(a==="cTerm")k.term=v;var adv=Math.min(Math.max(k.advSum,k.price*.1),k.price*MAXPCT/100),p=annuity(k.price-adv,k.term);t("cPriceV",fmt(k.price)+" BYN");t("cAdvV",fmt(adv)+" BYN <small>· "+Math.round(adv/k.price*100)+"%</small>");t("cTermV",k.term+" мес.");tweenNum(document.getElementById("cOut"),p," BYN");t("cSub","Всего с авансом "+fmt(adv+p*k.term)+" BYN");return;}
+ if(a==="pPay"||a==="pAdv"||a==="pTerm"){if(a==="pPay")k.pay=v;if(a==="pAdv")k.advSum2=v;if(a==="pTerm")k.term=v;var mp=k.advSum2+k.pay*pv(k.term);t("pPayV",fmt(k.pay)+" BYN/мес.");t("pAdvV",fmt(k.advSum2)+" BYN");t("pTermV",k.term+" мес.");tweenNum(document.getElementById("pOut"),mp," BYN");t("pSub","Подходит машин в каталоге: "+CARS.filter(function(c){return c.price<=mp;}).length);return;}
+ var c2=S.cond;
+ if(a==="sAdvSum"){c2.advSum=v;t("sAdvV",fmt(v)+" BYN");} if(a==="sAdvPct"){c2.advPct=v;t("sAdvV",v+"% от цены авто");}
+ if(a==="sTerm"){c2.term=v;t("sTermV",v+" мес.");} if(a==="sPay"){c2.pay=v;t("sPayV",fmt(v)+" BYN/мес.");} if(a==="sPrice"){c2.price=v;t("sPriceV",fmt(v)+" BYN");}
+ if(a[0]==="s"){t("sSum",condSummary());return;}
+ var f=S.f;if(a==="fPrice"){f.priceMax=v;t("fPriceV",fmt(v)+" BYN");}if(a==="fYear"){f.yearMin=v;t("fYearV",v);}if(a==="fKm"){f.kmMax=v;t("fKmV",fmt(v)+" км");}
+ if(a[0]==="f")updFilterCount();
+});
+function updFilterCount(){var b=document.getElementById("fApply");if(b)b.textContent="Показать "+filtered().length+" авто";}
+document.addEventListener("keydown",function(e){if(e.key==="Escape"){if(S.sheet)S.sheet=null;else if(S.quiz)S.quiz=null;else if(S.detail)S.detail=null;else if(S.flow)A.closeFlow();render();}});
+
+function bindSwipe(){
+ var card=document.getElementById("top");if(!card)return;
+ var x0=null,y0=0,dx=0,sLike=card.querySelector(".stamp.like"),sNo=card.querySelector(".stamp.nope");
+ card.addEventListener("pointerdown",function(e){if(e.target.closest("button"))return;x0=e.clientX;y0=e.clientY;dx=0;try{card.setPointerCapture(e.pointerId);}catch(_){}card.style.transition="none";});
+ card.addEventListener("pointermove",function(e){if(x0===null)return;dx=e.clientX-x0;var dy=e.clientY-y0;if(Math.abs(dx)<6&&Math.abs(dy)>10){x0=null;card.style.transform="";return;}card.style.transform="translateX("+dx+"px) rotate("+(dx/18)+"deg)";sLike.style.opacity=Math.max(0,Math.min(1,dx/90));sNo.style.opacity=Math.max(0,Math.min(1,-dx/90));});
+ function end(){if(x0===null)return;x0=null;card.style.transition="transform .25s ease";
+  if(Math.abs(dx)>90){var id=+card.dataset.id,c=car(id),right=dx>0;card.style.transform="translateX("+(right?500:-500)+"px) rotate("+(right?20:-20)+"deg)";setTimeout(function(){if(right){like(id);celebrate(c);}else nope(id);render();},180);}
+  else{card.style.transform="";sLike.style.opacity=0;sNo.style.opacity=0;}}
+ card.addEventListener("pointerup",end);card.addEventListener("pointercancel",end);
+ card.addEventListener("keydown",function(e){if(e.key==="ArrowRight"){A.like();render();}if(e.key==="ArrowLeft"){A.nope();render();}});
+}
+render();
+})();
+</script>
+
+<script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){});});}</script>
+</body>
+</html>
