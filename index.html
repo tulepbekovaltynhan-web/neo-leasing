@@ -41,8 +41,13 @@ button{cursor:pointer}
 @media (max-width:520px){.device{border-radius:20px;box-shadow:0 0 0 1px var(--line)} .note{display:none} body{padding-block:8px}}
 .hdr{padding:14px 16px 10px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line);background:var(--bg);flex:none}
 .hdr h1{font-size:18px;margin:0;font-weight:700;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.logo{display:flex;align-items:center;gap:4px;font-weight:700;font-size:17px;letter-spacing:-.2px}
-.logo .neo{border:2px solid var(--violet);border-radius:50%;padding:1px 6px;color:var(--violet);font-size:14px}
+.logo{display:inline-flex;align-items:center;font-weight:800;font-size:20px;letter-spacing:-.5px;color:var(--fg);line-height:1}
+.logo .lo{display:inline-block;width:15px;height:15px;border-radius:50%;border:3.5px solid var(--violet);position:relative;margin:0 1px;box-sizing:border-box;flex:none}
+.logo .lo::after{content:"";position:absolute;left:50%;top:50%;width:4px;height:4px;margin:-2px 0 0 -2px;border-radius:50%;background:var(--mint)}
+.logo .ll{font-weight:400;margin-left:5px}
+:root[data-theme="dark"] .logo .lo{border-color:var(--lav)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .logo .lo{border-color:var(--lav)}}
+.logo.big{font-size:42px;letter-spacing:-1.2px;color:#fff}.logo.big .lo{width:32px;height:32px;border-width:7px;border-color:#fff;margin:0 2px}.logo.big .lo::after{width:9px;height:9px;margin:-4.5px 0 0 -4.5px}.logo.big .ll{color:#D9D1FB;margin-left:9px}
 .scroll{flex:1;overflow-y:auto;overflow-x:hidden}
 .pad{padding:14px 16px 20px;display:flex;flex-direction:column;gap:14px}
 .tabbar{flex:none;display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);background:var(--bg);padding-bottom:6px}
@@ -80,7 +85,7 @@ button{cursor:pointer}
 .stack{position:relative;height:462px;margin-top:2px}
 .scard{position:absolute;inset:0;background:var(--card);border-radius:20px;border:1px solid var(--line);box-shadow:0 10px 30px -14px rgba(36,20,84,.35);overflow:hidden;display:flex;flex-direction:column;touch-action:pan-y;user-select:none}
 .scard.back{transform:scale(.95) translateY(12px);opacity:.75}
-.scard .art{height:206px;flex:none}
+.scard .art{height:220px;flex:none}
 .stamp{position:absolute;top:18px;padding:4px 10px;border:3px solid;border-radius:8px;font-weight:800;font-size:20px;opacity:0;letter-spacing:1px;z-index:3}
 .stamp.like{left:16px;color:var(--mint);border-color:var(--mint);transform:rotate(-12deg)}
 .stamp.nope{right:16px;color:var(--danger);border-color:var(--danger);transform:rotate(12deg)}
@@ -170,7 +175,7 @@ tbody tr:nth-child(even) td{background:var(--surface)}
 .overlay.zoom{animation:zoom .28s cubic-bezier(.2,.8,.2,1)}
 @keyframes slide{from{transform:translateX(30px);opacity:.6}to{transform:none;opacity:1}}
 @keyframes zoom{from{transform:scale(.9);opacity:0}to{transform:none;opacity:1}}
-.scrim{position:absolute;inset:0;background:rgba(20,12,46,.45);z-index:30;display:flex;align-items:flex-end}
+.scrim{position:absolute;inset:0;background:rgba(20,12,46,.45);z-index:45;display:flex;align-items:flex-end}
 .sheet{background:var(--bg);width:100%;max-height:90%;border-radius:20px 20px 0 0;display:flex;flex-direction:column;animation:up .24s ease}
 @keyframes up{from{transform:translateY(40px);opacity:.6}to{transform:none;opacity:1}}
 .sheet .hdr{border-radius:20px 20px 0 0}
@@ -236,7 +241,7 @@ tbody tr:nth-child(even) td{background:var(--surface)}
 .welcome h2{font-size:30px;line-height:1.08;margin:auto 0 0;letter-spacing:-.5px}
 .welcome p{margin:0;opacity:.88;font-size:15px;line-height:1.4}
 .welcome .btn{background:#fff;color:var(--violet)}
-.welcome .logo{color:#fff} .welcome .logo .neo{border-color:#fff;color:#fff}
+.welcome .logo{color:#fff}
 .toast{position:absolute;left:16px;right:16px;bottom:76px;background:var(--indigo);color:#fff;border-radius:12px;padding:11px 14px;font-size:13.5px;z-index:60;box-shadow:0 10px 24px -10px rgba(0,0,0,.4);animation:up .2s ease}
 .empty{text-align:center;padding:30px 10px;display:flex;flex-direction:column;gap:10px;align-items:center;color:var(--muted)}
 .empty b{color:var(--fg);font-size:16px}
@@ -274,6 +279,93 @@ canvas.confetti{position:absolute;inset:0;width:100%;height:100%;pointer-events:
 .pres button i{font-style:normal;width:26px;height:26px;border-radius:8px;background:var(--lav-soft);color:var(--link);display:grid;place-items:center;font-size:12px;font-weight:800;flex:none}
 .pres button small{display:block;font-weight:400;color:var(--muted);font-size:12px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.pcount{position:absolute;right:10px;bottom:8px;background:rgba(20,12,46,.6);color:#fff;font-size:11px;font-weight:700;border-radius:10px;padding:2px 8px;z-index:2}
+.gal-wrap{position:relative;background:var(--surface)}
+.gal{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;aspect-ratio:3/2;max-width:100%}
+.gal::-webkit-scrollbar{display:none}
+.gal img{flex:0 0 100%;width:100%;height:100%;object-fit:cover;scroll-snap-align:center;display:block}
+.gdots{position:absolute;left:0;right:0;bottom:10px;display:flex;justify-content:center;gap:6px}
+.gdots i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.55);box-shadow:0 0 0 1px rgba(0,0,0,.15)}
+.gdots i.on{background:#fff;width:18px;border-radius:4px}
+.art img{user-select:none;-webkit-user-drag:none}
+.splash{position:absolute;inset:0;z-index:70;background:linear-gradient(180deg,#6F3CD5 0%,#530AA7 55%,#3E1C86 100%);display:flex;flex-direction:column;align-items:center;overflow:hidden;transition:opacity .35s ease}
+.splash.out{opacity:0}
+.splash .route{position:absolute;inset:0;width:100%;height:100%}
+.splash .road{stroke-dasharray:1;stroke-dashoffset:1;animation:draw 1.5s cubic-bezier(.45,0,.25,1) .15s forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.splash .dash{opacity:0;animation:fadeIn2 .5s ease 1.3s forwards}
+.splash .pt circle{fill:#BFAEFD;opacity:.35;transition:none}
+.splash .pt text{font:800 11px Inter,Helvetica,Arial,sans-serif;fill:#241454;opacity:0}
+.splash .p1 circle,.splash .p1 text{animation:lit .3s ease .45s forwards}
+.splash .p2 circle,.splash .p2 text{animation:lit .3s ease .95s forwards}
+@keyframes lit{to{opacity:1}}
+.splash .lb{font:500 11px Inter,Helvetica,Arial,sans-serif;fill:#fff;opacity:0}
+.splash .l1{animation:lab .4s ease .5s forwards}.splash .l2{animation:lab .4s ease 1s forwards}.splash .l3{animation:lab .4s ease 1.65s forwards}
+@keyframes lab{to{opacity:.88}}
+.splash .fin{transform:scale(0);animation:popc .45s cubic-bezier(.2,1.6,.4,1) 1.6s forwards}
+@keyframes popc{to{transform:scale(1)}}
+@keyframes fadeIn2{to{opacity:.7}}
+.splash .whl{animation:hideW .25s ease 1.65s forwards}
+@keyframes hideW{to{opacity:0}}
+.splash{background:linear-gradient(180deg,#6F3CD5 0%,#530AA7 60%)!important}
+.sp-mid{position:relative;margin-top:34%;display:flex;flex-direction:column;align-items:center;gap:12px;animation:spIn .7s cubic-bezier(.2,.8,.2,1) both}
+.sp-mid .lo{animation:spin 1.4s cubic-bezier(.5,0,.3,1) .3s both}
+@keyframes spin{from{transform:rotate(-540deg)}to{transform:none}}
+@keyframes spIn{from{opacity:0;transform:translateY(16px) scale(.96)}to{opacity:1;transform:none}}
+.sp-sub{color:#D9D1FB;font-size:14px;font-weight:500}
+.sp-bar{position:absolute;bottom:48px;width:120px;height:4px;border-radius:2px;background:rgba(255,255,255,.22);overflow:hidden}
+.sp-bar i{display:block;height:100%;width:100%;background:#fff;border-radius:2px;transform-origin:left;animation:bar 2.6s ease-out both}
+@keyframes bar{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+/* home v3 */
+.hhead{justify-content:center;position:relative}
+.hhead .iconbtn{position:absolute;right:16px}
+.hero2{background:var(--violet);color:#fff;border-radius:18px;padding:16px;position:relative;overflow:hidden;min-height:132px;display:flex;flex-direction:column;justify-content:center}
+.hero2 b{position:relative;max-width:58%;font-size:24px;font-weight:800;letter-spacing:-.6px;display:block;line-height:1.05;font-variant-numeric:tabular-nums}
+.hero2 span{position:relative;font-size:14px;font-weight:600;line-height:1.3;display:block;margin-top:4px;max-width:52%}
+.hero2 .ph{position:absolute;right:-24px;bottom:0;width:56%;height:100%;-webkit-mask-image:linear-gradient(90deg,transparent,#000 35%);mask-image:linear-gradient(90deg,transparent,#000 35%)}
+.hero2 .ph img{width:100%;height:100%;object-fit:cover;display:block}
+.hero2 .tg{position:relative;align-self:flex-start;display:inline-block;margin-top:10px;font-size:12px;font-weight:700;background:rgba(255,255,255,.18);border-radius:8px;padding:4px 9px}
+.searchbox{display:flex;flex-direction:column;gap:10px}
+.sfield{display:flex;align-items:center;gap:8px;border:1.5px solid var(--line);border-radius:12px;padding:6px 6px 6px 12px;background:var(--bg)}
+.sfield:focus-within{border-color:var(--violet)}
+.sfield label{flex:1;display:flex;flex-direction:column;font-size:11px;color:var(--muted);min-width:0}
+.sfield input{border:0;outline:0;background:none;font-size:16px;padding:2px 0;width:100%;color:var(--fg)}
+.sfield .x{border:0;background:none;color:var(--muted);font-size:18px;padding:4px 6px}
+.cats{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px}
+.cats::-webkit-scrollbar{display:none}
+.cat{flex:none;width:104px;border:1px solid var(--line);background:var(--card);border-radius:14px;overflow:hidden;text-align:left;padding:0}
+.cat .ci{height:64px;background:var(--surface)}
+.cat .ci img{width:100%;height:100%;object-fit:cover;display:block}
+.cat span{display:block;font-size:12.5px;font-weight:600;padding:7px 9px 1px}
+.cat small{display:block;font-size:11px;color:var(--muted);padding:0 9px 8px}
+.promo{display:flex;gap:12px;align-items:center;border:0;border-radius:16px;padding:16px;text-align:left;width:100%;background:var(--surface);min-height:96px;position:relative;overflow:hidden}
+.promo>span:first-child{padding-right:78px;min-width:0}
+.promo b{display:block;font-size:17px;line-height:1.15;margin-bottom:5px}
+.promo small{display:block;color:var(--muted);font-size:12.5px;line-height:1.35}
+.promo .pi{position:absolute;right:12px;top:50%;transform:translateY(-50%);width:64px;height:64px;border-radius:18px;display:grid;place-items:center;color:#fff}
+.promo .pi svg{width:30px;height:30px}
+.recs{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px 4px}
+.recs::-webkit-scrollbar{display:none}
+.rec{flex:none;width:200px;border:1px solid var(--line);background:var(--card);border-radius:14px;overflow:hidden;text-align:left;padding:0}
+.rec .art{height:120px}
+.rec div.t{padding:8px 10px 10px;display:flex;flex-direction:column;gap:2px}
+.rec b{font-size:14px}
+.rec .pay{font-size:16px}
+/* fav v3 */
+.favlist{display:flex;flex-direction:column;gap:8px}
+.frow{display:flex;gap:10px;align-items:center;border:1px solid var(--line);border-radius:14px;padding:6px 6px 6px 6px;background:var(--card)}
+.frow .art{width:84px;height:56px;border-radius:10px;flex:none}
+.frow .g{flex:1;min-width:0;border:0;background:none;padding:0;text-align:left;display:flex;flex-direction:column;gap:2px}
+.frow .g b{font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.frow .g span{font-size:12.5px;color:var(--muted)}
+.del{width:36px;height:36px;border-radius:10px;border:0;background:var(--surface);color:var(--muted);display:grid;place-items:center;flex:none}
+.del svg{width:16px;height:16px}
+.del:hover{color:var(--danger)}
+.cmp th .hx{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.cmp th .hx button{border:0;background:rgba(255,255,255,.18);color:#fff;width:24px;height:24px;border-radius:7px;display:grid;place-items:center;flex:none;padding:0}
+.cmp th .hx button svg{width:13px;height:13px}
+.toast button{background:none;border:0;color:var(--lav);font-weight:800;margin-left:10px;padding:0;font-size:13.5px}
+html,body{margin:0}
 </style><style>
 @media (max-width:520px){body{padding:0}.note{display:none}.device{width:100%;max-height:none;height:100%;border-radius:0;box-shadow:none;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}}
 </style>
@@ -295,16 +387,16 @@ var O2=["Климат-контроль","Камера заднего вида","
 var O3=["Кожаный салон","Адаптивный круиз","Проекция на лобовое стекло","Панорамная крыша","Камера 360°","Электропривод багажника"];
 var O4=["Кондиционер","Парктроники","Подогрев сидений"];
 var CARS=[
- C(1,"Geely","Coolray",2026,"Кроссовер","Белый","Бензин",1.5,177,"Робот","Передний",0,78900,"В наличии","Автоцентр «Восток»","Минск",O1,{ad:true}),
- C(2,"Belgee","X50",2026,"Кроссовер","Красный","Бензин",1.5,177,"Робот","Передний",0,69900,"В наличии","Сити Авто","Минск",O1,{ad:true}),
- C(3,"Geely","Atlas",2026,"Кроссовер","Серый","Бензин",2.0,200,"Автомат","Полный",0,104900,"Предзаказ","Автоцентр «Восток»","Минск",O1.concat(["Панорамная крыша"]),{wait:3}),
+ C(1,"Geely","Cityray",2026,"Кроссовер","Белый","Бензин",1.5,181,"Робот","Передний",0,69900,"В наличии","Автоцентр «Восток»","Минск",O1,{ad:true}),
+ C(2,"Belgee","X50",2026,"Кроссовер","Красный","Бензин",1.5,177,"Робот","Передний",0,58900,"В наличии","Сити Авто","Минск",O1,{ad:true}),
+ C(3,"Geely","Atlas",2026,"Кроссовер","Серый","Бензин",2.0,200,"Автомат","Полный",0,87900,"Предзаказ","Автоцентр «Восток»","Минск",O1.concat(["Панорамная крыша"]),{wait:3}),
  C(4,"Toyota","Camry",2021,"Седан","Чёрный","Бензин",2.5,200,"Автомат","Передний",68000,96500,"В наличии","Премиум Трейд","Минск",O2.concat(["Кожаный салон"]),{owners:1}),
- C(5,"Haval","Jolion",2025,"Кроссовер","Оранжевый","Бензин",1.5,150,"Робот","Передний",0,74500,"В наличии","Мотор Плюс","Брест",O1),
+ C(5,"Haval","Jolion",2026,"Кроссовер","Оранжевый","Бензин",1.5,150,"Робот","Передний",0,70300,"В наличии","Мотор Плюс","Брест",O1),
  C(6,"Volkswagen","Polo",2020,"Седан","Серебристый","Бензин",1.6,110,"Автомат","Передний",74000,44900,"В наличии","Сити Авто","Минск",O4,{owners:2}),
  C(7,"Tank","300",2025,"Внедорожник","Хаки","Бензин",2.0,220,"Автомат","Полный",0,164900,"В наличии","Мотор Плюс","Минск",O3),
- C(8,"Belgee","X70",2025,"Кроссовер","Синий","Бензин",2.0,200,"Автомат","Передний",0,89900,"В наличии","Сити Авто","Гродно",O1),
+ C(8,"Belgee","X70",2026,"Кроссовер","Синий","Бензин",2.0,200,"Автомат","Передний",0,77900,"В наличии","Сити Авто","Гродно",O1),
  C(9,"Skoda","Octavia Combi",2020,"Универсал","Серый","Бензин",1.4,150,"Робот","Передний",88000,57900,"В наличии","Премиум Трейд","Минск",O2,{owners:1}),
- C(10,"Geely","EX5",2026,"Кроссовер","Зелёный","Электро",0,218,"Автомат","Передний",0,92900,"Предзаказ","Автоцентр «Восток»","Минск",O1.concat(["Проекция на лобовое стекло"]),{wait:2,range:550}),
+ C(10,"Geely","EX5",2026,"Кроссовер","Зелёный","Электро",0,218,"Автомат","Передний",0,67900,"Предзаказ","Автоцентр «Восток»","Минск",O1.concat(["Проекция на лобовое стекло"]),{wait:2,range:550}),
  C(11,"Kia","Sportage",2022,"Кроссовер","Красный","Бензин",2.0,150,"Автомат","Полный",39000,86900,"В наличии","Мотор Плюс","Минск",O2,{owners:1}),
  C(12,"Lada","Vesta",2025,"Седан","Белый","Бензин",1.6,106,"Механика","Передний",0,46900,"В наличии","Сити Авто","Гомель",O4),
  C(13,"Toyota","Land Cruiser 200",2016,"Внедорожник","Белый","Дизель",4.5,249,"Автомат","Полный",231000,189000,"В наличии","Премиум Трейд","Минск",O3,{owners:2,seats:7}),
@@ -315,7 +407,7 @@ var CARS=[
  C(18,"Mercedes-Benz","E 200",2019,"Седан","Серый","Бензин",2.0,197,"Автомат","Задний",112000,124900,"В наличии","Премиум Трейд","Минск",O3,{owners:2}),
  C(19,"Toyota","Hilux",2021,"Пикап","Серебристый","Дизель",2.8,204,"Автомат","Полный",73000,128900,"В наличии","Мотор Плюс","Могилёв",O2,{owners:1}),
  C(20,"Hyundai","Tucson",2021,"Кроссовер","Белый","Бензин",2.0,150,"Автомат","Передний",55000,79500,"В наличии","Сити Авто","Минск",O2,{owners:1}),
- C(21,"Geely","Monjaro",2026,"Кроссовер","Чёрный","Бензин",2.0,238,"Автомат","Полный",0,144900,"Предзаказ","Автоцентр «Восток»","Минск",O3,{wait:3}),
+ C(21,"Geely","Monjaro",2026,"Кроссовер","Чёрный","Бензин",2.0,238,"Автомат","Полный",0,110900,"Предзаказ","Автоцентр «Восток»","Минск",O3,{wait:3}),
  C(22,"Volkswagen","Multivan",2020,"Минивэн","Серый","Дизель",2.0,150,"Робот","Передний",134000,129000,"В наличии","Премиум Трейд","Минск",O2,{owners:1,seats:7}),
  C(23,"Audi","Q5",2020,"Кроссовер","Синий","Бензин",2.0,249,"Робот","Полный",86000,126900,"В наличии","Премиум Трейд","Минск",O3,{owners:1}),
  C(24,"Renault","Logan",2018,"Седан","Бежевый","Бензин",1.6,82,"Механика","Передний",121000,26900,"В наличии","Сити Авто","Брест",["Кондиционер"],{owners:3}),
@@ -325,6 +417,7 @@ var CARS=[
  C(28,"Volkswagen","Tiguan",2019,"Кроссовер","Коричневый","Бензин",2.0,180,"Робот","Полный",96000,79900,"В наличии","Сити Авто","Минск",O2,{owners:2})
 ];
 var BODIES=["Кроссовер","Внедорожник","Седан","Хэтчбек","Универсал","Лифтбек","Пикап","Минивэн"];
+var PHOTOS={"1": ["img/1-1.jpg", "img/1-2.jpg", "img/1-3.jpg", "img/1-4.jpg"], "2": ["img/2-1.jpg", "img/2-2.jpg"], "3": ["img/3-1.jpg", "img/3-2.jpg", "img/3-3.jpg"], "21": ["img/21-1.jpg", "img/21-2.jpg", "img/21-3.jpg"], "10": ["img/10-1.jpg", "img/10-2.jpg", "img/10-3.jpg"], "5": ["img/5-1.jpg", "img/5-2.jpg", "img/5-3.jpg"], "14": ["img/14-1.jpg", "img/14-2.jpg", "img/14-3.jpg"], "7": ["img/7-1.jpg", "img/7-2.jpg", "img/7-3.jpg"], "4": ["img/4-1.jpg", "img/4-2.jpg"], "25": ["img/25-1.jpg", "img/25-2.jpg", "img/25-3.jpg"], "13": ["img/13-1.jpg", "img/13-2.jpg", "img/13-3.jpg", "img/13-4.jpg"], "19": ["img/19-1.jpg", "img/19-2.jpg", "img/19-3.jpg"], "6": ["img/6-1.jpg", "img/6-2.jpg"], "9": ["img/9-1.jpg", "img/9-2.jpg", "img/9-3.jpg"], "16": ["img/16-1.jpg", "img/16-2.jpg", "img/16-3.jpg"], "15": ["img/15-1.jpg", "img/15-2.jpg"], "18": ["img/18-1.jpg", "img/18-2.jpg"], "22": ["img/22-1.jpg", "img/22-2.jpg", "img/22-3.jpg"]};var PCOL={"1": "Серый", "2": "Серый", "3": "Синий", "21": "Синий", "10": "Бежевый", "5": "Серебристый", "14": "Серый", "7": "Серый", "4": "Белый", "25": "Серый", "13": "Чёрный", "19": "Хаки", "6": "Серый", "9": "Серебристый", "16": "Белый", "15": "Чёрный", "18": "Белый", "22": "Чёрный"};CARS.forEach(function(c){var p=PHOTOS[c.id];if(p){c.imgs=p;if(PCOL[c.id]){c.c=PCOL[c.id];c.hex=COLORS[c.c];}}});CARS=CARS.filter(function(c){return c.imgs;});BODIES=BODIES.filter(function(b){return CARS.some(function(c){return c.body===b;});});
 var BT={"Кроссовер":"suv","Внедорожник":"suv","Седан":"sedan","Хэтчбек":"hatch","Универсал":"wagon","Лифтбек":"sedan","Пикап":"pickup","Минивэн":"van"};
 var RATE=0.14, FUEL=2.55, KWH=0.30, KM=1500, MAXPCT=49;
 
@@ -377,7 +470,8 @@ function carSVG(body,hex){
  });
  return h+'</svg>';
 }
-function art(c){return c.img?'<img src="'+c.img+'" alt="'+c.b+' '+c.m+'" loading="lazy">'+(c.credit?'<span class="credit">'+c.credit+'</span>':''):carSVG(c.body,c.hex);}
+function art(c){return c.imgs?'<img src="'+c.imgs[0]+'" alt="'+c.b+' '+c.m+'" draggable="false">'+(c.imgs.length>1?'<span class="pcount">1/'+c.imgs.length+'</span>':''):carSVG(c.body,c.hex);}
+function gallery(c){if(!c.imgs)return '<div class="art detail-art">'+tagsFor(c)+art(c)+'</div>';var h='<div class="gal-wrap">'+tagsFor(c)+'<div class="gal" id="gal">';c.imgs.forEach(function(u,i){h+='<img src="'+u+'" alt="'+c.b+' '+c.m+', фото '+(i+1)+'" draggable="false">';});h+='</div><div class="gdots" id="gdots">';c.imgs.forEach(function(u,i){h+='<i'+(i?'':' class="on"')+'></i>';});return h+'</div></div>';}
 
 function fmt(n){return Math.round(n).toLocaleString("ru-RU").replace(/[  ,]/g," ");}
 function pv(term){var i=RATE/12;return (1-Math.pow(1+i,-term))/i;}
@@ -403,9 +497,9 @@ function tco(c,advSum,term){var pay=annuity(c.price-advSum,term);var ins=c.price
  var serv=c.km===0?60:(c.y<2018?170:110);return {pay:pay,ins:ins,fuel:fuel,serv:serv,total:pay+ins+fuel+serv};}
 
 function fresh(){return {
- welcome:true, tab:"catalog", view:"home", mode:"swipe",
+ welcome:false, splash:true, tab:"catalog", view:"home", mode:"swipe",
  cond:{advMode:"byn",advSum:20000,advPct:20,term:36,btype:"pay",pay:3000,price:100000},
- f:{body:[],fuel:[],gb:[],dr:[],color:[],brand:[],st:[],av:[],priceMax:200000,yearMin:2014,kmMax:250000,inLimit:true},
+ f:{q:"",body:[],fuel:[],gb:[],dr:[],color:[],brand:[],st:[],av:[],priceMax:200000,yearMin:2014,kmMax:250000,inLimit:true},
  sort:"rel", liked:[], skipped:[], history:[],
  sheet:null, detail:null, quiz:null, match:null, matchOn:false, lastQuiz:null,
  calc:{mode:"car",price:80000,advSum:20000,term:36,pay:2500,advSum2:20000},
@@ -419,6 +513,7 @@ function filtered(){var f=S.f;return CARS.filter(function(c){
  if(f.gb.length&&!has(f.gb,c.gb))return false; if(f.dr.length&&!has(f.dr,c.dr))return false;
  if(f.color.length&&!has(f.color,c.c))return false; if(f.brand.length&&!has(f.brand,c.b))return false;
  if(f.st.length&&!has(f.st,c.st))return false; if(f.av.length&&!has(f.av,c.av))return false;
+ if(f.q){var qq=f.q.toLowerCase().trim();if((c.b+' '+c.m+' '+c.body).toLowerCase().indexOf(qq)<0)return false;}
  if(c.price>f.priceMax||c.y<f.yearMin||c.km>f.kmMax)return false;
  if(!inBudget(c))return false; if(S.limit&&f.inLimit&&!inLimit(c))return false; return true;});}
 function sorted(list){var l=list.slice(),s=S.sort;
@@ -472,7 +567,7 @@ var I={
  play:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l10.5-6.5z"/></svg>'
 };
 function mosaic(cols,rows){var pal=["#530AA7","#241454","#BFAEFD","#6F3CD5","#00B386","transparent","#D9D1FB","transparent"];var h="",seed=7;for(var i=0;i<cols*rows;i++){seed=(seed*37+11)%97;h+='<i style="background:'+pal[seed%pal.length]+';animation-delay:'+(i*25)+'ms"></i>';}return h;}
-function logo(){return '<span class="logo"><span class="neo">neo</span> leasing</span>';}
+function logo(big){return '<span class="logo'+(big?' big':'')+'" aria-label="neo leasing">ne<span class="lo"></span><span class="ll">leasing</span></span>';}
 
 var app=document.getElementById("app"),fx=null,afterHooks=[];
 function render(){
@@ -484,6 +579,7 @@ function render(){
  if(S.flow)h+=renderFlow();
  if(S.sheet)h+='<div class="scrim" data-a="closeSheet"><div class="sheet" role="dialog" aria-modal="true">'+renderSheet()+'</div></div>';
  if(S.welcome)h+=renderWelcome();
+ if(S.splash)h+=renderSplash();
  if(fx)h+=fx;
  if(S.toast)h+='<div class="toast" role="status">'+S.toast+'</div>';
  app.innerHTML=h;fx=null;
@@ -496,23 +592,33 @@ function condBar(){return '<button class="cond" data-a="openCond"><span>'+condTe
 
 function renderWelcome(){return '<div class="welcome"><div class="between">'+logo()+'<button class="iconbtn" style="background:rgba(255,255,255,.15);color:#fff" data-a="openPres" aria-label="Режим презентации" title="Режим презентации">'+I.play+'</button></div><div class="mos">'+mosaic(6,4)+'</div><h2>Выберите машину и оформите лизинг в одном приложении</h2><p>Подбор, расчёт платежа, одобрение, договор и доставка — без визита в офис.</p><button class="btn" data-a="startCond">Подобрать автомобиль</button><button class="btn ghost" style="color:#fff;opacity:.85" data-a="skipWelcome">Пропустить и смотреть каталог</button></div>';}
 
+function renderSplash(){var P="M-20 560 C 60 520, 40 440, 140 420 S 250 330, 200 270";
+ return '<div class="splash'+(S.splashOut?' out':'')+'" aria-label="Загрузка"><svg class="route" viewBox="0 0 284 604" preserveAspectRatio="xMidYMid slice" aria-hidden="true">'+
+ '<path d="'+P+'" pathLength="1" class="road" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="26" stroke-linecap="round"/>'+
+ '<path d="'+P+'" class="dash" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="10 12" stroke-linecap="round"/>'+
+ '<g class="pt p1" transform="translate(37 518)"><circle r="11"/><text y="4" text-anchor="middle">1</text></g><text class="lb l1" x="54" y="522">Выбрали</text>'+
+ '<g class="pt p2" transform="translate(140 420)"><circle r="11"/><text y="4" text-anchor="middle">2</text></g><text class="lb l2" x="156" y="424">Одобрили</text>'+
+ '<g transform="translate(200 270)"><g class="fin"><circle r="15" fill="#00B386"/><path d="M-6 0 l4 4 l8 -9" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g></g><text class="lb l3" x="168" y="244">Привезли</text>'+
+ '<g class="whl"><g><circle r="9" fill="#530AA7" stroke="#fff" stroke-width="4"/><circle r="3" fill="#00B386"/><animateTransform attributeName="transform" type="rotate" from="0" to="720" dur="1.5s" begin="0.15s" fill="freeze"/></g><animateMotion dur="1.5s" begin="0.15s" fill="freeze" calcMode="spline" keyTimes="0;1" keySplines=".45 0 .25 1" path="'+P+'"/></g>'+
+ '</svg><div class="sp-mid">'+logo(true)+'<div class="sp-sub">Автомобиль в лизинг — в одном приложении</div></div><div class="sp-bar"><i></i></div></div>';}
+function startSplash(){setTimeout(function(){S.splashOut=true;render();setTimeout(function(){S.splash=false;S.splashOut=false;render();},380);},2800);}
 function renderHome(){
- var h='<header class="hdr">'+logo()+'<span style="flex:1"></span><button class="iconbtn" data-a="openPres" aria-label="Режим презентации" title="Режим презентации">'+I.play+'</button><button class="iconbtn" data-a="openFilters" aria-label="Фильтры">'+I.filter+'</button></header><div class="scroll"><div class="pad">';
- h+=condBar();
- h+='<div class="hero"><div class="mosaic">'+mosaic(4,3)+'</div>';
- if(S.contract){var cc=car(S.contract.id);h+='<span class="tag ok" style="align-self:flex-start">Договор действует</span><h2>'+cc.b+' '+cc.m+' — ваша</h2><p>Ближайший платёж и документы — в кабинете.</p><button class="btn" data-a="tab" data-v="cab">Открыть кабинет</button>';}
- else if(S.app){var ca=car(S.app.id);h+='<span class="tag ok" style="align-self:flex-start">Заявка в работе</span><h2>'+ca.b+' '+ca.m+'</h2><p>Статус: '+FLOW[S.app.step].t.toLowerCase()+'.</p><button class="btn" data-a="openFlow">Открыть заявку</button>';}
- else if(S.limit&&S.limit.shown)h+='<span class="tag ok" style="align-self:flex-start">Одобрено</span><h2>Вам одобрено до '+fmt(S.limit.amount)+' BYN</h2><p>Аванс от '+S.limit.minAdv+'%, срок до '+S.limit.maxTerm+' мес. Показываем машины, которые проходят по этой сумме.</p>';
- else h+='<h2>Узнайте, сколько вам одобрят</h2><p>2 минуты, вход через МСИ, без справок. Ещё не выбрали машину — начните отсюда.</p><button class="btn" data-a="getLimit">Узнать сумму</button>';
- h+='</div>';
- h+='<button class="smart" data-a="openQuiz"><span class="ic">'+I.spark+'</span><span><b>Умный подбор</b><small>'+(S.match?'Подборка готова · открыть':'3 вопроса — и покажем машины, которые подходят именно вам')+'</small></span></button>';
- h+='<button class="btn" data-a="openCatalog">Смотреть все авто · '+filtered().length+'</button>';
- h+='<div class="sec-title">Тип кузова</div><div class="tiles">';
- BODIES.forEach(function(b){var n=CARS.filter(function(c){return c.body===b;}).length;h+='<button class="tile" data-a="pickBody" data-v="'+b+'">'+carSVG(b,"#C9CDD6")+'<span>'+b+'</span><small>'+n+'</small></button>';});
- h+='</div><div class="sec-title">Марки</div><div class="brands">';
- brands().forEach(function(b){h+='<button class="chip" data-a="pickBrand" data-v="'+b+'">'+b+'</button>';});
- return h+'</div><button class="btn sec" data-a="openFilters">Подобрать по параметрам</button></div></div>';
+ var all=filtered(),n=all.length,N=CARS.length,minp=Math.min.apply(null,CARS.map(carPay)),hero=CARS[0];
+ var h='<header class="hdr hhead">'+logo()+'<button class="iconbtn" data-a="openPres" aria-label="Режим презентации" title="Режим презентации">'+I.play+'</button></header><div class="scroll"><div class="pad">';
+ h+='<div class="hero2"><div class="ph">'+(hero.imgs?'<img src="'+hero.imgs[0]+'" alt="">':'')+'</div><b>Автомобили в лизинг</b><span>Выбор, одобрение и доставка — в одном приложении</span><em class="tg" style="font-style:normal">от '+fmt(minp)+' BYN/мес.</em></div>';
+ if(S.contract){var cc=car(S.contract.id);h+='<button class="promo" data-a="tab" data-v="cab" style="background:var(--lav-soft)"><span><b>'+cc.b+' '+cc.m+' — ваша</b><small>Ближайший платёж и документы в кабинете</small></span><span class="pi" style="background:var(--mint)">'+I.check+'</span></button>';}
+ else if(S.app){var ca=car(S.app.id);h+='<button class="promo" data-a="openFlow" style="background:var(--lav-soft)"><span><b>Заявка: '+ca.b+' '+ca.m+'</b><small>Статус: '+FLOW[S.app.step].t.toLowerCase()+'</small></span><span class="pi" style="background:var(--violet)">'+I.doc+'</span></button>';}
+ h+='<div class="searchbox"><div class="sfield"><label for="q">Марка, модель, кузов<input id="q" type="search" autocomplete="off" placeholder="Например, Geely" value="'+S.f.q.replace(/"/g,'&quot;')+'"></label>'+(S.f.q?'<button class="x" data-a="clearQ" aria-label="Очистить">✕</button>':'')+'<button class="iconbtn" data-a="openFilters" aria-label="Фильтры">'+I.filter+(activeCount()?'<span class="badge">'+activeCount()+'</span>':'')+'</button></div>'+condBar()+'<button class="btn" data-a="openCatalog" id="showN">'+showLabel(n)+'</button></div>';
+ h+='<div class="cats">';BODIES.forEach(function(b){var cs=CARS.filter(function(c){return c.body===b;});var p=cs.filter(function(c){return c.imgs;})[0];h+='<button class="cat" data-a="pickBody" data-v="'+b+'"><div class="ci">'+(p?'<img src="'+p.imgs[0]+'" alt="">':carSVG(b,"#C9CDD6"))+'</div><span>'+b+'</span><small>'+cs.length+'</small></button>';});h+='</div>';
+ if(!S.app&&!S.contract){if(S.limit&&S.limit.shown)h+='<div class="promo" style="background:var(--lav-soft)"><span><b>Вам одобрено до '+fmt(S.limit.amount)+' BYN</b><small>Аванс от '+S.limit.minAdv+'%, срок до '+S.limit.maxTerm+' мес.</small></span><span class="pi" style="background:var(--mint)">'+I.check+'</span></div>';
+  else h+='<button class="promo" data-a="getLimit"><span><b>Узнайте, сколько вам одобрят</b><small>2 минуты, вход через МСИ, без справок</small></span><span class="pi" style="background:var(--violet)">'+I.shield+'</span></button>';}
+ h+='<button class="promo" data-a="openQuiz"><span><b>Умный подбор</b><small>'+(S.match?'Подборка готова — открыть':'3 вопроса — и покажем машины, которые подходят именно вам')+'</small></span><span class="pi" style="background:linear-gradient(135deg,var(--violet),var(--violet-2))">'+I.spark+'</span></button>';
+ h+='<button class="promo" data-a="tab" data-v="calc"><span><b>Калькулятор лизинга</b><small>Посчитайте платёж или узнайте, на какую машину хватит</small></span><span class="pi" style="background:var(--mint)">'+I.calc+'</span></button>';
+ var rec=sorted(all).slice(0,8);if(rec.length){h+='<div class="between"><span class="sec-title" style="margin:0">Рекомендуем</span><button class="btn link" data-a="openCatalog" style="width:auto">Все</button></div><div class="recs">';rec.forEach(function(c){h+='<button class="rec" data-a="open" data-id="'+c.id+'"><div class="art">'+art(c)+'</div><div class="t"><b>'+c.b+' '+c.m+'</b><span class="small muted">'+c.y+' · '+(c.km?fmt(c.km/1000)+' тыс. км':'новый')+'</span><span class="pay">'+fmt(carPay(c))+' <small>BYN/мес.</small></span></div></button>';});h+='</div>';}
+ return h+'</div></div>';
 }
+function plural(n,a,b,c){var m=n%10,mm=n%100;return m===1&&mm!==11?a:(m>=2&&m<=4&&(mm<10||mm>=20)?b:c);}
+function showLabel(n){return n?'Показать '+n+' '+plural(n,'предложение','предложения','предложений'):'Нет машин под эти условия';}
 function brands(){var o=[];CARS.forEach(function(c){if(!has(o,c.b))o.push(c.b);});return o.sort();}
 function quickChips(){var f=S.f,h='<div class="chips">';
  [["body","Кроссовер"],["body","Седан"],["fuel","Электро"],["gb","Автомат"],["dr","Полный"],["st","Новое"],["av","В наличии"]].forEach(function(x){h+='<button class="chip" data-a="toggle" data-k="'+x[0]+'" data-v="'+x[1]+'" aria-pressed="'+has(f[x[0]],x[1])+'">'+x[1]+'</button>';});
@@ -524,7 +630,7 @@ function renderCatalog(){
  var h='<header class="hdr"><button class="back" data-a="home" aria-label="Назад">'+I.back+'</button><h1>'+title+'</h1>';
  h+='<div class="modes" role="group" aria-label="Режим просмотра">'+modeBtn("swipe",I.cards,"Свайпы")+modeBtn("feed",I.list,"Лента")+modeBtn("grid",I.grid,"Плитка")+'</div>';
  var ac=activeCount();h+='<button class="iconbtn" data-a="openFilters" aria-label="Фильтры">'+I.filter+(ac?'<span class="badge">'+ac+'</span>':'')+'</button></header>';
- h+='<div class="scroll"><div class="pad" style="gap:10px">'+condBar()+quickChips();
+ h+='<div class="scroll"><div class="pad" style="gap:10px">'+condBar()+quickChips();if(S.f.q)h+='<div class="hint"><span class="sp">Поиск: «'+S.f.q.replace(/</g,'')+'»</span><button data-a="clearQ">Сбросить</button></div>';
  if(S.matchOn)h+='<div class="hint">'+I.spark.replace('<svg','<svg width="16" height="16"')+'<span class="sp">Отсортировано по умному подбору</span><button data-a="matchOff">Сбросить</button></div>';
  if(!list.length)return h+'<div class="empty"><b>Под эти условия машин нет</b>Ослабьте фильтры или увеличьте бюджет в «Моих условиях».<button class="btn sec" data-a="resetFilters">Сбросить фильтры</button></div></div></div>';
  if(S.mode==="swipe"){
@@ -551,7 +657,7 @@ function dCalc(c,d){var adv=Math.min(Math.max(d.advSum,c.price*minPct(c)/100),c.
 function renderDetail(){
  var c=car(S.detail.id),d=S.detail,liked=has(S.liked,c.id),x=dCalc(c,d),mn=Math.ceil(c.price*minPct(c)/100/500)*500,mx=Math.floor(c.price*MAXPCT/100/500)*500;
  var h='<section class="overlay zoom" role="dialog" aria-label="'+c.b+' '+c.m+'"><header class="hdr"><button class="back" data-a="closeDetail" aria-label="Назад">'+I.back+'</button><h1>'+c.b+' '+c.m+'</h1><button class="iconbtn" data-a="fav" data-id="'+c.id+'" aria-label="В избранное" style="color:'+(liked?'var(--link)':'var(--muted)')+'">'+I.heart+'</button></header><div class="scroll">';
- h+='<div class="art detail-art">'+tagsFor(c)+art(c)+'</div><div class="pad">';
+ h+=gallery(c)+'<div class="pad">';afterHooks.push(bindGal);
  h+='<div><div class="between" style="align-items:baseline"><span style="font-size:22px;font-weight:800">'+fmt(c.price)+' BYN</span><span class="muted small">≈ '+fmt(c.price/3.25)+' USD</span></div><div class="row muted small" style="margin-top:4px"><span class="dot" style="background:'+c.hex+'"></span>'+c.c+' · '+c.dealer+', '+c.city+'</div></div>';
  if(S.matchOn&&S.match){var mm=S.match[c.id];h+='<div class="okbox">Подходит вам на '+mm.p+'%'+(mm.r.length?': '+mm.r.join(", ").toLowerCase():'')+'</div>';}
  h+='<div class="card accent"><div class="between"><b>Лизинговый калькулятор</b><span class="pill">демо</span></div><div class="big" id="dPay" data-v="'+Math.round(x.pay)+'">'+fmt(x.pay)+' <small>BYN/мес.</small></div>';
@@ -562,7 +668,7 @@ function renderDetail(){
  h+='<label class="f">Срок <span class="val" id="dTermV">'+d.term+' мес.</span><input type="range" id="dTerm" min="12" max="'+(S.limit?S.limit.maxTerm:60)+'" step="6" value="'+d.term+'" data-a="dTerm"></label>';
  h+='<dl class="kv" id="dKv">'+detailKv(c,x,d)+'</dl><button class="btn link" data-a="toggleSched">'+(d.sched?'Скрыть график':'Показать график платежей')+'</button>'+(d.sched?schedTable(c.price,x.adv,d.term,6):'')+'</div>';
  h+='<div class="card"><button class="switch" role="switch" aria-checked="'+!!d.tco+'" data-a="toggleTco"><span>Полная стоимость владения<br><small class="muted" style="font-weight:400;font-size:12px">Платёж + страховка + топливо + обслуживание</small></span><span class="tg"></span></button><div id="tcoBox">'+(d.tco?tcoHtml(c,x.adv,d.term):'')+'</div></div>';
- h+='<p class="disc">Предварительный расчёт по демо-ставке '+(RATE*100)+'% годовых, НДС включён. Окончательные условия — в договоре.</p>';
+ h+='<p class="disc">Предварительный расчёт по демо-ставке '+Math.round(RATE*100)+'% годовых, НДС включён. Окончательные условия — в договоре.</p>';
  h+='<div class="sec-title">Характеристики</div><div class="specgrid">';
  [["Год",c.y],["Пробег",c.km?fmt(c.km)+" км":"Новый"],["Кузов",c.body],["Цвет",c.c],["Двигатель",c.fuel==="Электро"?"Электро":c.eng.toFixed(1)+" л, "+c.fuel.toLowerCase()],["Мощность",c.hp+" л.с."],["КПП",c.gb],["Привод",c.dr],["Мест",c.seats],[c.fuel==="Электро"?"Запас хода":"Владельцев",c.fuel==="Электро"?c.range+" км":(c.owners||"—")]].forEach(function(r){h+='<div class="spec">'+r[0]+'<b>'+r[1]+'</b></div>';});
  h+='</div><div class="sec-title">Комплектация</div><div class="opts">';c.opt.forEach(function(o){h+='<span class="opt">'+o+'</span>';});h+='</div>';
@@ -595,18 +701,21 @@ function renderCalc(){
   h+='<div class="card accent"><span class="muted small">Можно взять авто стоимостью до</span><div class="big" id="pOut" data-v="'+Math.round(mp)+'">'+fmt(mp)+' BYN</div><span class="small muted" id="pSub">Подходит машин в каталоге: '+CARS.filter(function(c){return c.price<=mp;}).length+'</span></div>';
   h+='<button class="btn" data-a="showFromPay">Показать эти машины</button>';
  }
- return h+'<p class="disc">Расчёт предварительный, по демо-ставке '+(RATE*100)+'% годовых. '+(S.limit?'Учтены ваши одобренные условия.':'После одобрения расчёт станет точным для вас.')+'</p></div></div>';
+ return h+'<p class="disc">Расчёт предварительный, по демо-ставке '+Math.round(RATE*100)+'% годовых. '+(S.limit?'Учтены ваши одобренные условия.':'После одобрения расчёт станет точным для вас.')+'</p></div></div>';
 }
 
 function renderFav(){
  var l=S.liked.map(car),h='<header class="hdr"><h1>Избранное и сравнение</h1><button class="iconbtn" data-a="openPres" aria-label="Режим презентации" title="Режим презентации">'+I.play+'</button></header><div class="scroll"><div class="pad">';
  if(!l.length)return h+'<div class="empty"><b>Здесь пока пусто</b>Свайпните машину вправо или нажмите ♥, чтобы сравнить варианты.<button class="btn" data-a="goCatalog">Перейти к подбору</button></div></div></div>';
  h+=condBar();
+ h+='<div class="favlist">';l.forEach(function(c){h+='<div class="frow"><div class="art">'+art(c)+'</div><button class="g" data-a="open" data-id="'+c.id+'"><b>'+c.b+' '+c.m+'</b><span>'+fmt(carPay(c))+' BYN/мес. · '+fmt(c.price)+' BYN</span></button><button class="del" data-a="unfav" data-id="'+c.id+'" aria-label="Убрать '+c.b+' '+c.m+' из избранного">'+I.close+'</button></div>';});h+='</div>';
+ if(l.length<2)return h+'<p class="disc">Добавьте ещё одну машину, чтобы сравнить их рядом.</p><button class="btn sec" data-a="goCatalog">Перейти к подбору</button></div></div>';
+ h+='<div class="sec-title">Сравнение</div>';
  var rows=[["Платёж, BYN/мес.",function(c){return fmt(carPay(c));},true],["Аванс, BYN",function(c){var a=advFor(c);return fmt(a.sum)+(a.short?" ⚠":"");}],["Цена, BYN",function(c){return fmt(c.price);}],["Год",function(c){return c.y;}],["Пробег",function(c){return c.km?fmt(c.km)+" км":"новый";}],["Кузов",function(c){return c.body;}],["Цвет",function(c){return c.c;}],["Топливо",function(c){return c.fuel;}],["Двигатель",function(c){return c.fuel==="Электро"?c.range+" км":c.eng.toFixed(1)+" л";}],["Мощность",function(c){return c.hp+" л.с.";}],["КПП",function(c){return c.gb;}],["Привод",function(c){return c.dr;}],["Наличие",function(c){return c.av;}],["Опций",function(c){return c.opt.length;}]];
- h+='<div class="tbl-wrap"><table class="cmp"><thead><tr><th>'+l.length+' авто</th>';l.forEach(function(c){h+='<th>'+c.b+' '+c.m+'</th>';});h+='</tr></thead><tbody><tr><td></td>';
+ h+='<div class="tbl-wrap"><table class="cmp"><thead><tr><th>'+l.length+' авто</th>';l.forEach(function(c){h+='<th><span class="hx">'+c.b+' '+c.m+'<button data-a="unfav" data-id="'+c.id+'" aria-label="Убрать">'+I.close+'</button></span></th>';});h+='</tr></thead><tbody><tr><td></td>';
  l.forEach(function(c){h+='<td class="art-cell"><button data-a="open" data-id="'+c.id+'" style="border:0;background:none;padding:0"><div class="art">'+art(c)+'</div></button></td>';});h+='</tr>';
  rows.forEach(function(r){var vals=l.map(r[1]);var diff=vals.some(function(v){return v!==vals[0];});h+='<tr'+(r[2]?' class="pin"':'')+'><td>'+r[0]+'</td>';vals.forEach(function(v){h+='<td'+(diff&&!r[2]?' class="diff"':'')+'>'+v+'</td>';});h+='</tr>';});
- h+='<tr><td></td>';l.forEach(function(c){h+='<td><button class="btn" style="padding:8px 10px;font-size:13px" data-a="apply" data-id="'+c.id+'">Оформить</button> <button class="btn ghost" style="width:auto;padding:4px;font-size:12px" data-a="fav" data-id="'+c.id+'">Убрать</button></td>';});
+ h+='<tr><td></td>';l.forEach(function(c){h+='<td><button class="btn" style="padding:8px 10px;font-size:13px" data-a="apply" data-id="'+c.id+'">Оформить</button> </td>';});
  return h+'</tr></tbody></table></div><p class="disc">Отличающиеся значения выделены. ⚠ — аванса в ваших условиях не хватает до минимума для этой машины.</p></div></div>';
 }
 
@@ -753,11 +862,12 @@ function filterSheet(){var f=S.f;
  h+='<label class="f"><h4>Год выпуска от</h4><span class="val" id="fYearV">'+f.yearMin+'</span><input type="range" id="fYear" min="2014" max="2026" value="'+f.yearMin+'" data-a="fYear"></label>';
  h+='<label class="f"><h4>Пробег до</h4><span class="val" id="fKmV">'+fmt(f.kmMax)+' км</span><input type="range" id="fKm" min="0" max="250000" step="10000" value="'+f.kmMax+'" data-a="fKm"></label>';
  return h+'<p class="disc">В полной версии — ещё объём и мощность двигателя, салон, опции комплектации и другие параметры (раздел 4.3.1 ТЗ).</p></div></div><div class="foot"><button class="btn" data-a="applyFilters" id="fApply">Показать '+filtered().length+' авто</button></div>';}
-function presSheet(){var items=[["1","С самого начала","Приветствие и «Мои условия»","pres1"],["2","Каталог — свайпы","Сразу к выбору машины","pres2"],["3","Умный подбор","3 вопроса и подборка","pres3"],["4","Клиент ещё не выбрал машину","Узнал сумму одобрения, смотрит подходящие","pres4"],["5","Подписание договора","Заявка на машину одобрена, документы готовы","pres5"],["6","Доставка на карте","Машина едет к клиенту","pres6"],["7","Кабинет с договором","График, оплата, страховка","pres7"]];
+function presSheet(){var items=[["1","С самого начала","Заставка и главный экран","pres1"],["2","Каталог — свайпы","Сразу к выбору машины","pres2"],["3","Умный подбор","3 вопроса и подборка","pres3"],["4","Клиент ещё не выбрал машину","Узнал сумму одобрения, смотрит подходящие","pres4"],["5","Подписание договора","Заявка на машину одобрена, документы готовы","pres5"],["6","Доставка на карте","Машина едет к клиенту","pres6"],["7","Кабинет с договором","График, оплата, страховка","pres7"]];
  var h=sheetHdr("Режим презентации")+'<div class="scroll"><div class="pad"><p class="muted small" style="margin:0">Панель для ведущего: переход к любому моменту сценария в один тап, без заполнения анкет на показе.</p><div class="pres">';
  items.forEach(function(x){h+='<button data-a="'+x[3]+'"><i>'+x[0]+'</i><span>'+x[1]+'<small>'+x[2]+'</small></span></button>';});
  return h+'</div><button class="switch" role="switch" aria-checked="'+S.scoreFail+'" data-a="toggleFail"><span>Показывать отказ при проверке<br><small class="muted" style="font-weight:400;font-size:12px">Чтобы продемонстрировать сценарий отказа</small></span><span class="tg"></span></button></div></div>';}
 
+function bindGal(){var g=document.getElementById("gal"),d=document.getElementById("gdots");if(!g||!d)return;g.addEventListener("scroll",function(){var i=Math.round(g.scrollLeft/g.clientWidth);[].forEach.call(d.children,function(e,j){e.className=j===i?"on":"";});},{passive:true});}
 function confetti(){if(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches)return;var dev=document.getElementById("device");if(!dev||!dev.clientWidth)return;var cv=document.createElement("canvas");cv.className="confetti";dev.appendChild(cv);var W=cv.width=dev.clientWidth*2,H=cv.height=dev.clientHeight*2,ctx=cv.getContext("2d");if(!ctx){cv.remove();return;}
  var cols=["#530AA7","#BFAEFD","#00B386","#6F3CD5","#FFD166"],ps=[];for(var i=0;i<110;i++)ps.push({x:W/2+(Math.random()-.5)*W*.3,y:H*.32,vx:(Math.random()-.5)*26,vy:-Math.random()*26-8,s:Math.random()*10+6,r:Math.random()*6,vr:(Math.random()-.5)*.4,c:cols[i%5]});
  var t=0;(function f(){t++;ctx.clearRect(0,0,W,H);ps.forEach(function(p){p.vy+=.9;p.x+=p.vx;p.y+=p.vy;p.vx*=.99;p.r+=p.vr;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.r);ctx.fillStyle=p.c;ctx.globalAlpha=Math.max(0,1-t/90);ctx.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);ctx.restore();});if(t<90)requestAnimationFrame(f);else cv.remove();})();}
@@ -765,7 +875,7 @@ function tweenNum(el,to,suffix){if(!el)return;var from=+el.dataset.v||to;el.data
 function celebrate(c){fx='<div class="match" aria-hidden="true"><div class="m"><div class="h">'+I.heart+'</div><b>'+c.b+' '+c.m+'</b><span class="small muted">в избранном · '+fmt(carPay(c))+' BYN/мес.</span></div></div>';}
 
 var toastT;
-function toast(t){S.toast=t;render();clearTimeout(toastT);toastT=setTimeout(function(){S.toast=null;render();},2300);}
+function toast(t,ms){S.toast=t;render();clearTimeout(toastT);toastT=setTimeout(function(){S.toast=null;render();},ms||2300);}
 function like(id){if(!has(S.liked,id))S.liked.push(id);var i=S.skipped.indexOf(id);if(i>=0)S.skipped.splice(i,1);S.history.push({id:id,t:"like"});}
 function nope(id){if(!has(S.skipped,id))S.skipped.push(id);S.history.push({id:id,t:"nope"});}
 function openDetail(id){var c=car(id);S.detail={id:id,advSum:advFor(c).sum,term:myTerm(),sched:false,tco:false};}
@@ -801,6 +911,9 @@ var A={
  nope:function(){var q=swipeQueue();if(q[0])nope(q[0].id);},
  undo:function(){var x=S.history.pop();if(!x)return;var a=x.t==="like"?S.liked:S.skipped,i=a.indexOf(x.id);if(i>=0)a.splice(i,1);},
  resetSkips:function(){S.skipped=[];S.history=[];},
+ unfav:function(v,el){var id=+el.dataset.id,i=S.liked.indexOf(id);if(i<0)return;S.liked.splice(i,1);S.lastRm={id:id,i:i};var c=car(id);toast(c.b+' '+c.m+' убран<button data-a="undoFav">Вернуть</button>',4000);return true;},
+ undoFav:function(){var r=S.lastRm;if(r&&!has(S.liked,r.id))S.liked.splice(r.i,0,r.id);S.lastRm=null;S.toast=null;},
+ clearQ:function(){S.f.q="";},
  fav:function(v,el){var id=+el.dataset.id,i=S.liked.indexOf(id);if(i>=0)S.liked.splice(i,1);else{like(id);celebrate(car(id));}},
  open:function(v,el){openDetail(+el.dataset.id);},
  closeDetail:function(){S.detail=null;},
@@ -841,14 +954,14 @@ var A={
  quizShow:function(){S.quiz=null;S.matchOn=true;S.sort="rel";S.mode="swipe";S.skipped=[];S.tab="catalog";S.view="catalog";},
  matchOff:function(){S.matchOn=false;},
  openPres:function(){S.sheet="pres";},
- pres1:function(){var f=S.scoreFail;S=fresh();S.scoreFail=f;},
+ pres1:function(){var f=S.scoreFail;S=fresh();S.scoreFail=f;startSplash();},
  pres2:function(){S.welcome=false;S.sheet=null;S.tab="catalog";S.view="catalog";S.mode="swipe";S.flow=null;S.detail=null;S.quiz=null;},
  pres3:function(){S.welcome=false;S.sheet=null;S.flow=null;S.detail=null;S.tab="catalog";S.view="home";S.quiz={step:0,a:[]};},
  pres4:function(){setDemoUser();S.app=null;S.contract=null;S.limit={amount:140000,minAdv:20,maxTerm:60,shown:true};S.sheet=null;S.flow=null;S.tab="catalog";S.view="home";},
  pres5:function(){demoApp(3);},
  pres6:function(){demoApp(6);},
  pres7:function(){setDemoUser();S.limit={amount:140000,minAdv:20,maxTerm:60,shown:false};var c=car(5);S.contract={id:5,adv:Math.max(S.cond.advSum,c.price*.2),term:36,paid:2};S.app=null;S.flow=null;S.sheet=null;S.tab="cab";},
- reset:function(){S=fresh();}
+ reset:function(){S=fresh();startSplash();}
 };
 
 app.addEventListener("click",function(e){
@@ -857,11 +970,12 @@ app.addEventListener("click",function(e){
  var a=el.dataset.a;if(!A[a]||el.tagName==="INPUT"||el.tagName==="SELECT")return;
  e.stopPropagation();if(A[a](el.dataset.v,el)===true)return;render();
 });
+app.addEventListener("keydown",function(e){if(e.target.id==="q"&&e.key==="Enter"){e.preventDefault();S.view="catalog";render();}});
 app.addEventListener("change",function(e){var el=e.target;
  if(el.id==="sortSel"){S.sort=el.value;render();}
  if(el.id==="fLimit"){S.f.inLimit=el.checked;updFilterCount();}
 });
-app.addEventListener("input",function(e){var el=e.target,v=+el.value,a=el.dataset.a;if(!a)return;
+app.addEventListener("input",function(e){var el=e.target;if(el.id==="q"){S.f.q=el.value;var b=document.getElementById("showN");if(b)b.textContent=showLabel(filtered().length);return;}var v=+el.value,a=el.dataset.a;if(!a)return;
  var t=function(id,s){var x=document.getElementById(id);if(x)x.innerHTML=s;};
  if(a==="dAdv"||a==="dTerm"){var d=S.detail,c=car(d.id);if(a==="dAdv")d.advSum=v;else d.term=v;var x=dCalc(c,d);t("dAdvV",fmt(x.adv)+' BYN <small>· '+Math.round(x.pct)+'% от цены</small>');t("dTermV",d.term+" мес.");tweenNum(document.getElementById("dPay"),x.pay,' <small>BYN/мес.</small>');t("dKv",detailKv(c,x,d));if(d.tco)t("tcoBox",tcoHtml(c,x.adv,d.term));var ap=document.getElementById("dApply");if(ap)ap.textContent=(c.av==="Предзаказ"?"Предзаказ в лизинг":"Оформить в лизинг")+" · "+fmt(x.pay)+" BYN/мес.";return;}
  var k=S.calc;
@@ -888,7 +1002,7 @@ function bindSwipe(){
  card.addEventListener("pointerup",end);card.addEventListener("pointercancel",end);
  card.addEventListener("keydown",function(e){if(e.key==="ArrowRight"){A.like();render();}if(e.key==="ArrowLeft"){A.nope();render();}});
 }
-render();
+render();startSplash();
 })();
 </script>
 
