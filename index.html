@@ -367,7 +367,16 @@ canvas.confetti{position:absolute;inset:0;width:100%;height:100%;pointer-events:
 .toast button{background:none;border:0;color:var(--lav);font-weight:800;margin-left:10px;padding:0;font-size:13.5px}
 html,body{margin:0}
 </style><style>
-@media (max-width:520px){body{padding:0}.note{display:none}.device{width:100%;max-height:none;height:100%;border-radius:0;box-shadow:none;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}}
+@media (max-width:520px){body{padding:0}.note{display:none}.device{width:100%;max-height:none;height:100%;border-radius:0;box-shadow:none}}
+.hdr{padding-top:calc(14px + env(safe-area-inset-top,0px))}
+.sheet .hdr{padding-top:14px}
+.tabbar{padding-bottom:calc(6px + env(safe-area-inset-bottom,0px))}
+.foot{padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+.sheet{max-height:calc(100% - env(safe-area-inset-top,0px) - 12px)}
+.toast{bottom:calc(76px + env(safe-area-inset-bottom,0px))}
+.splash .sp-mid{margin-top:calc(34% + env(safe-area-inset-top,0px))}
+.back,.hdr .iconbtn{width:42px;height:42px}
+.back svg{width:22px;height:22px}
 </style>
 </head>
 <body>
