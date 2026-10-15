@@ -695,7 +695,7 @@ function sorted(list){var l=list.slice(),s=S.sort;
  if(s==="year")l.sort(function(a,b){return b.y-a.y||a.km-b.km;});
  if(s==="km")l.sort(function(a,b){return a.km-b.km;});
  return l;}
-function swipeQueue(){return sorted(filtered()).filter(function(c){return !has(S.liked,c.id)&&!has(S.skipped,c.id);});}
+function swipeQueue(){var r=S.round||[];return sorted(filtered()).filter(function(c){if(has(r,c.id)||has(S.skipped,c.id))return false;if(S.back)return has(S.back,c.id);return S.again||!has(S.liked,c.id);});}
 function activeCount(){var f=S.f,n=0;["body","fuel","gb","dr","brand","st","av"].forEach(function(k){n+=f[k].length;});if(f.priceMax<200000)n++;if(f.yearMin>2014)n++;if(f.kmMax<250000)n++;if(f.seats)n++;if(f.premium)n++;if(f.text)n++;return n;}
 
 /* ===== phrase parser ===== */
@@ -930,13 +930,18 @@ function vList(){
 function vSwipe(){
  var list=filtered(),q=swipeQueue();
  var h=hdr('<h1>Подбор</h1>','<button class="ibtn" data-a="openQuiz" aria-label="Умный подбор">'+I.spark+'</button><button class="ibtn" data-a="openFilters" aria-label="Фильтры">'+I.filter+(activeCount()?'<span class="dotb">'+activeCount()+'</span>':'')+'</button>'+bell());
+ var sm=S.smode||"swipe";
+ h+='<div class="pad" style="margin-bottom:10px"><div class="segbar" role="tablist" aria-label="Вид подбора">'+[["swipe","Свайпы",I.cards],["feed","Лента",I.list],["grid","Плитка",I.grid]].map(function(m){return '<button data-a="smode" data-v="'+m[0]+'" aria-pressed="'+(sm===m[0])+'">'+m[2].replace('<svg','<svg width="15" height="15" style="vertical-align:-3px;margin-right:5px"')+m[1]+'</button>';}).join("")+'</div></div>';
  if(S.matchOn)h+='<div class="pad" style="margin-bottom:6px"><div class="hint"><span>Порядок — по умному подбору</span><button data-a="matchOff">Сбросить</button></div></div>';
+ if(sm!=="swipe"){var L2=sorted(filtered());h+='<div class="scroll" data-sk="swipe-'+sm+'"><div class="pad" style="gap:12px"><div class="sortrow"><span>'+cars(L2.length)+'</span><select id="sortSel" aria-label="Сортировка"><option value="rel"'+(S.sort==="rel"?" selected":"")+'>'+(S.matchOn?"По подбору":"Рекомендуем")+'</option><option value="pay"'+(S.sort==="pay"?" selected":"")+'>Сначала дешевле</option><option value="year"'+(S.sort==="year"?" selected":"")+'>Сначала новее</option><option value="km"'+(S.sort==="km"?" selected":"")+'>Меньше пробег</option></select></div>';
+  if(!L2.length)return h+emptyNoCars()+'</div></div>';
+  h+='<div class="'+(sm==="grid"?"grid2":"feed")+'">';L2.forEach(function(c,i){h+=fc(c,i,sm==="grid");});return h+'</div></div></div>';}
  h+='<div class="deck" id="deck" style="margin-bottom:calc(92px + env(safe-area-inset-bottom,0px))">';
  if(!list.length)return h+'<div class="pad">'+emptyNoCars()+'</div></div>';
- if(!q.length)return h+'<div class="empty"><div class="eic">'+I.heart+'</div><b>Вы посмотрели все '+cars(list.length)+'</b>В избранном: '+S.liked.length+'. Пропущенные можно вернуть.<button class="btn" data-a="tab" data-v="mine">Открыть «Мои машины»</button><button class="btn sec" data-a="resetSkips">Показать пропущенные снова</button></div></div>';
+ if(!q.length)return h+'<div class="empty"><div class="eic">'+I.heart+'</div><b>Вы посмотрели все '+cars(list.length)+'</b>В избранном: '+S.liked.length+(S.skipped.length?'. Пропущено: '+S.skipped.length+' — их можно вернуть.':'.')+'<button class="btn" data-a="tab" data-v="mine">Открыть «Мои машины»</button><button class="btn sec" data-a="resetSkips">'+(S.skipped.length?'Показать пропущенные снова ('+S.skipped.length+')':'Посмотреть все машины снова')+'</button></div></div>';
  if(q[1])h+=scard(q[1],true);h+=scard(q[0],false);
  h+='<div class="dact"><button class="round no" data-a="nope" aria-label="Пропустить">'+I.x+'</button><button class="round small undo" data-a="undo" aria-label="Вернуть последнюю"'+(S.history.length?'':' disabled')+'>'+I.undo+'</button><button class="round yes" data-a="like" aria-label="Нравится" id="likeBtn">'+I.heart+'</button></div></div>';
- return h+'<div class="cnt-line" style="position:absolute;left:0;right:0;bottom:calc(84px + env(safe-area-inset-bottom,0px))">'+(list.length-q.length+1)+' из '+list.length+' · вправо — нравится, влево — пропустить</div>';
+ return h+'<div class="cnt-line" style="position:absolute;left:0;right:0;bottom:calc(84px + env(safe-area-inset-bottom,0px))">'+(function(){var t=S.back?S.back.length:list.length;return Math.max(1,t-q.length+1)+' из '+t+(S.back?' пропущенных':'');})()+' · вправо — нравится, влево — пропустить</div>';
 }
 function scard(c,back){var a=advFor(c);return '<article class="scard'+(back?' back':'')+'" '+(back?'aria-hidden="true"':'id="top" tabindex="0" data-id="'+c.id+'"')+'><img class="ph" src="'+img(c)+'" alt="'+esc(nm(c))+'" draggable="false">'+tags(c)+
  '<span class="stamp like">НРАВИТСЯ</span><span class="stamp nope">НЕТ</span><div class="bt"><b>'+nm(c)+'</b><div class="s">'+specLine(c)+'<br>'+c.gb+' · '+c.dr.toLowerCase()+' привод · '+c.city+'</div><div class="pay">'+fmt(carPay(c))+' <small>BYN/мес.</small></div><div class="tt">'+fmt(c.price)+' BYN · аванс '+fmt(a.sum)+' · '+myTerm()+' мес.</div></div>'+(back?'':'<button class="more" data-a="open" data-id="'+c.id+'">Подробнее</button>')+'</article>';}
@@ -1249,9 +1254,9 @@ function pSub(mp){return 'Подходит машин в каталоге: '+CAR
 
 /* ===== actions ===== */
 function closeAll(){S.detail=null;S.sheet=null;S.story=null;S.peek=null;S.ov=null;S.quiz=null;S.flow=null;}
-function like(id,el){if(!has(S.liked,id)){S.liked.push(id);S.stats.likes++;}var i=S.skipped.indexOf(id);if(i>=0)S.skipped.splice(i,1);S.history.push({id:id,t:"like"});blip(880);
+function like(id,el){if(!has(S.liked,id)){S.liked.push(id);S.stats.likes++;}var i=S.skipped.indexOf(id);if(i>=0)S.skipped.splice(i,1);S.history.push({id:id,t:"like"});(S.round=S.round||[]).push(id);blip(880);
  if(el)setTimeout(function(){burst(el);},0);scheduleDrop(id);}
-function nope(id){if(!has(S.skipped,id))S.skipped.push(id);S.history.push({id:id,t:"nope"});blip(330);}
+function nope(id){if(!has(S.skipped,id))S.skipped.push(id);S.history.push({id:id,t:"nope"});(S.round=S.round||[]).push(id);blip(330);}
 function scheduleDrop(id){if(S.dropDone)return;S.dropDone=true;setTimeout(function(){var c=car(id);if(!c||!has(S.liked,id))return;var d=Math.max(500,Math.round(c.price*.02/500)*500);c.price-=d;
  notify({ic:"tag",col:"var(--mint-2)",t:"Цена снизилась",s:nm(c)+": −"+fmt(d)+" BYN. Теперь "+fmt(c.price)+" BYN, платёж "+fmt(carPay(c))+" BYN/мес.",go:["open",id]});blip(990,1);render();},6000);}
 function appNotify(st){var c=S.app&&car(S.app.id);if(!c)return;var t=["Заявка создана","Заявка на андеррайтинге","Заявка одобрена","Договор подписан","Аванс получен","Доставка подтверждена","Машина выехала к вам","Логист на месте"][st];
@@ -1277,6 +1282,7 @@ var A={
  homeBack:function(){S.hv="home";S.pq=null;},
  showList:function(){S.pq=null;enterList();},
  lmode:function(v){S.lmode=v;},
+ smode:function(v){S.smode=v;blip(600);},
  openNotifs:function(){S.ov="notifs";},
  closeOv:function(){S.ov=null;},
  ovGo:function(v){S.ov=null;S.tab=v;},
@@ -1301,8 +1307,8 @@ var A={
  matchOff:function(){S.matchOn=false;},
  like:function(){var q=swipeQueue();if(q[0]){like(q[0].id,document.getElementById("likeBtn"));}},
  nope:function(){var q=swipeQueue();if(q[0])nope(q[0].id);},
- undo:function(){var x=S.history.pop();if(!x)return;var a=x.t==="like"?S.liked:S.skipped,i=a.indexOf(x.id);if(i>=0)a.splice(i,1);},
- resetSkips:function(){S.skipped=[];S.history=[];},
+ undo:function(){var x=S.history.pop();if(!x)return;if(S.round){var ri=S.round.lastIndexOf(x.id);if(ri>=0)S.round.splice(ri,1);}var a=x.t==="like"?S.liked:S.skipped,i=a.indexOf(x.id);if(i>=0)a.splice(i,1);},
+ resetSkips:function(){var n=S.skipped.length;S.back=n?S.skipped.slice():null;S.skipped=[];S.history=[];S.round=[];S.again=!n;blip(620);toast(n?"Вернули пропущенные: "+cars(n):"Показываем все машины заново");return true;},
  fav:function(v,el){var id=+el.dataset.id,i=S.liked.indexOf(id);if(i>=0){S.liked.splice(i,1);blip(400);}else like(id,el);},
  unfav:function(v,el){var id=+el.dataset.id,i=S.liked.indexOf(id);if(i<0)return;S.liked.splice(i,1);S.lastRm={id:id,i:i};toast(nm(car(id))+' убран<button data-a="undoFav">Вернуть</button>',4000);return true;},
  undoFav:function(){var r=S.lastRm;if(r&&!has(S.liked,r.id))S.liked.splice(r.i,0,r.id);S.lastRm=null;S.toast=null;},
