@@ -528,6 +528,8 @@ canvas.fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z
 :root{--cta:rgba(20,16,31,.95)}
 .bento{grid-template-rows:minmax(104px,auto) minmax(104px,auto)}
 .bx:not(.big){padding-top:54px}
+.lnk{border:0;background:none;padding:0;color:var(--link);font-weight:600;font-size:inherit;text-decoration:underline;text-underline-offset:2px}
+.check span{line-height:1.4}
 
 </style>
 </head>
@@ -997,6 +999,7 @@ function vProfile(){
  h+='<div class="sec-t">Настройки</div><div class="card"><div class="f">Тема оформления<div class="segbar"><button data-a="theme" data-v="light" aria-pressed="'+(S.theme==="light")+'">Светлая</button><button data-a="theme" data-v="dark" aria-pressed="'+(S.theme==="dark")+'">Тёмная</button><button data-a="theme" data-v="system" aria-pressed="'+(S.theme==="system")+'">Как в системе</button></div></div>'+
   '<button class="switch" role="switch" aria-checked="'+S.big+'" data-a="bigFont"><span>Крупный шрифт<small>Текст и цифры крупнее</small></span><span class="tg2"></span></button>'+
   '<button class="switch" role="switch" aria-checked="'+S.sound+'" data-a="sound"><span>Звуки и вибрация<small>Отклик на лайк и действия</small></span><span class="tg2"></span></button></div>';
+ h+='<div class="sec-t">Данные и согласия</div><div class="card" style="gap:0;padding:4px 14px"><button class="li" data-a="openConsents"><span class="ic">'+I.shield+'</span><span class="g">Мои согласия<small>'+((S.consents||[]).filter(function(x){return !x.off;}).length?'Действует: '+(S.consents||[]).filter(function(x){return !x.off;}).length+' · можно отозвать':'Посмотреть и отозвать')+'</small></span>›</button><button class="li" data-a="pdDoc" data-v="policy"><span class="ic">'+I.doc+'</span><span class="g">Политика обработки данных<small>Как мы храним и защищаем данные</small></span>›</button></div>';
  h+='<div class="sec-t">Для показа</div><div class="card" style="gap:0;padding:4px 14px">'+
   '<button class="li" data-a="openPres"><span class="ic">'+I.play+'</span><span class="g">Презентация<small>Быстрые переходы по сценарию, показ отказа</small></span><span aria-hidden="true">›</span></button>'+
   '<button class="li" data-a="openDealer"><span class="ic">'+I.store+'</span><span class="g">Глазами дилера<small>Кабинет дилера и воронка лизинговой компании</small></span><span aria-hidden="true">›</span></button></div>';
@@ -1217,10 +1220,24 @@ var SHEETS={
   var h=sh(c?"Оформление":"Сколько вам одобрят")+'<div class="sb" data-sk="sh-co">';
   if(c)h+=miniCar(c,t);
   if(!S.user)h+='<div class="okbox" style="display:flex;gap:10px;align-items:center">'+I.shield.replace('<svg','<svg width="22" height="22" style="flex:none"')+'<span>ФИО и паспорт получим через МСИ — справки и копии не нужны</span></div>';
-  h+='<label class="f">Доход в месяц, BYN<input class="inp" id="inc" inputmode="numeric" autocomplete="off" placeholder="Например, 3 500" value="'+(inc?fmt(inc):"")+'"></label>';
+  var iv=S.incDraft!=null?S.incDraft:inc;
+  h+='<label class="f">Ваш доход в месяц, BYN<input class="inp" id="inc" inputmode="numeric" autocomplete="off" placeholder="Введите ваш доход" value="'+(iv?fmt(iv):"")+'"><span class="small muted" style="font-size:11.5px">Сумма на руки после налогов — по ней оценим шанс одобрения</span></label>';
   if(c)h+='<div class="f"><div class="meter"><i id="mtI" style="width:'+(chn?chn.p:0)+'%;background:'+(chn?chn.col:'var(--line)')+'"></i></div><div class="between small"><b id="mtT" class="'+(chn?chn.cls:'')+'">'+(chn?chn.t:'Укажите доход')+'</b><span id="mtS" class="muted">'+(chn?'платёж — '+Math.round(chn.r*100)+'% дохода':'покажем шанс одобрения')+'</span></div></div>';
-  h+='<label class="check"><input type="checkbox" id="cs1" checked> Согласен на обработку персональных данных</label><label class="check"><input type="checkbox" id="cs2" checked> Согласен на запрос в кредитное бюро</label><label class="check"><input type="checkbox" id="cs3"> Получать новости и предложения</label>';
-  return h+'</div><div class="sf"><button class="btn" data-a="confirmCo">'+(c?'Подтвердить и отправить':'Узнать сумму')+'</button><p class="disc center">Демо: вход через МСИ имитируется, данные тестовые.</p></div>';},
+  var k=S.cons||{};
+  h+='<div class="card" style="gap:10px;padding:14px"><b style="font-size:14px">Согласия</b>'+
+   '<label class="check"><input type="checkbox" id="cs1" data-cons="pd"'+(k.pd?' checked':'')+'><span>Даю согласие на обработку моих персональных данных для рассмотрения заявки на лизинг · <button type="button" class="lnk" data-a="pdDoc" data-v="pd">Текст согласия</button></span></label>'+
+   '<label class="check"><input type="checkbox" id="cs2" data-cons="cb"'+(k.cb?' checked':'')+'><span>Даю согласие на получение моего кредитного отчёта · <button type="button" class="lnk" data-a="pdDoc" data-v="cb">Подробнее</button></span></label>'+
+   '<label class="check"><input type="checkbox" id="cs3" data-cons="mk"'+(k.mk?' checked':'')+'><span>Хочу получать новости и предложения <span class="muted">(необязательно)</span></span></label>'+
+   '<span class="small muted" style="font-size:11.5px;line-height:1.4">Данные увидят только участники сделки: лизинговая компания и дилер. Согласие можно отозвать в «Профиле → Мои согласия». <button type="button" class="lnk" data-a="pdDoc" data-v="policy">Политика обработки данных</button></span></div>';
+  var ok=k.pd&&k.cb;
+  return h+'</div><div class="sf"><button class="btn" data-a="confirmCo" id="coBtn"'+(ok?'':' disabled')+'>'+(c?'Подтвердить и отправить':'Узнать сумму')+'</button><p class="disc center" id="coHint">'+(ok?'Демо: вход через МСИ имитируется, данные тестовые.':'Отметьте два обязательных согласия')+'</p></div>';},
+ login:function(){return sh("Вход через МСИ")+'<div class="sb"><div class="okbox">ФИО, дату рождения и телефон получим из МСИ — пароль придумывать не нужно.</div><label class="check"><input type="checkbox" id="lgCons"'+(S.loginOk?' checked':'')+'><span>Даю согласие на обработку моих данных для входа и личного кабинета · <button type="button" class="lnk" data-a="pdDoc" data-v="acc">Текст согласия</button></span></label></div><div class="sf"><button class="btn" data-a="loginGo" id="lgBtn"'+(S.loginOk?'':' disabled')+'>Продолжить в МСИ (демо)</button></div>';},
+ pdDoc:function(){var d=PDDOC[S.pdDoc];var h=sh(d[0])+'<div class="sb" data-sk="sh-pd">';d[1].forEach(function(r){h+='<div><b style="font-size:14px">'+r[0]+'</b><p style="margin:4px 0 0;font-size:13.5px;line-height:1.5">'+r[1]+'</p></div>';});
+  return h+'<p class="disc">Шаблон для демо. Окончательный текст утверждает юрист и ответственный за обработку персональных данных.</p></div><div class="sf"><button class="btn sec" data-a="pdBack">'+(S.pdFrom?'Вернуться к оформлению':'Закрыть')+'</button></div>';},
+ consents:function(){var L=S.consents||[],h=sh("Мои согласия")+'<div class="sb">';
+  if(!L.length)h+='<div class="empty" style="padding:20px"><div class="eic">'+I.shield+'</div><b>Согласий пока нет</b>Они появятся, когда вы отправите заявку.</div>';
+  L.forEach(function(x,i){h+='<div class="card" style="gap:6px;padding:14px"><div class="between"><b style="font-size:14px">'+CONS_T[x.k]+'</b>'+(x.off?'<span class="pill2">отозвано</span>':'<span class="pill2 ok">действует</span>')+'</div><span class="small muted">'+(x.off?'Отозвано '+x.off:'Дано '+x.d)+' · через приложение</span>'+(x.off?'':'<div class="row"><button class="btn link" data-a="pdDoc" data-v="'+x.k+'" style="padding:4px 0">Текст</button><button class="btn link" data-a="revoke" data-v="'+i+'" style="padding:4px 0;color:var(--danger)">Отозвать</button></div>')+'</div>';});
+  return h+'<p class="disc">Отзыв согласия на обработку данных для заявки остановит её рассмотрение. Данные, которые мы обязаны хранить по закону, удаляются после окончания срока хранения.</p></div><div class="sf"><button class="btn sec" data-a="pdDoc" data-v="policy">Политика обработки данных</button></div>';},
  why:function(){var q=curCalc(),c=q.c,x=q.x,d=q.d,P=c.price-x.adv,tot=x.pay*d.term,int=tot-P,p5=annuity(Math.max(0,P-5000),d.term),p60=annuity(P,60);
   var h=sh("Почему такой платёж")+'<div class="sb"><dl class="kv"><dt>Цена машины</dt><dd>'+fmt(c.price)+' BYN</dd><dt>− Ваш аванс</dt><dd>'+fmt(x.adv)+' BYN</dd><dt><b>= Финансируем</b></dt><dd><b>'+fmt(P)+' BYN</b></dd><dt>Ставка (демо)</dt><dd>'+Math.round(RATE*100)+'% годовых</dd><dt>Срок</dt><dd>'+d.term+' мес.</dd></dl>';
   h+='<div class="card"><span class="small muted">Из чего состоят все платежи за '+d.term+' мес.</span><div class="tco-bar"><i style="width:'+(P/tot*100)+'%;background:var(--violet)"></i><i style="width:'+(int/tot*100)+'%;background:var(--mint-2)"></i></div><div class="legend"><div><span class="sw" style="background:var(--violet)"></span>Стоимость машины<span class="v">'+fmt(P)+'</span></div><div><span class="sw" style="background:var(--mint-2)"></span>Вознаграждение лизинговой компании<span class="v">'+fmt(int)+'</span></div></div>';
@@ -1252,6 +1269,15 @@ function fApplyLbl(){var n=filtered().length;return n?"Показать "+cars(n
 function condSum(){var n=filtered().length;return 'Под ваш платёж и эти условия подходит '+cars(n)+' из '+CARS.length;}
 function pSub(mp){return 'Подходит машин в каталоге: '+CARS.filter(function(c){return c.price<=mp;}).length;}
 
+var CONS_T={pd:"Обработка данных для заявки",cb:"Получение кредитного отчёта",mk:"Новости и предложения",acc:"Вход и личный кабинет"};
+var OPR="Оператор — [наименование и УНП оператора, адрес] (в демо — Neo Leasing)";
+var PDDOC={
+ pd:["Согласие на обработку данных",[["Кто обрабатывает",OPR+"."],["Какие данные","ФИО, дата рождения, данные паспорта и адрес (из МСИ), телефон, место работы, доход, выбранный автомобиль и условия лизинга."],["Зачем","Рассмотреть заявку, оценить платёжеспособность, подготовить и исполнить договор лизинга."],["Кому передаём","Лизинговой компании, которая рассматривает заявку, и дилеру выбранного автомобиля — только в объёме, нужном для сделки."],["Что делаем с данными","Сбор, систематизация, хранение, изменение, использование, передача указанным лицам, обезличивание, удаление."],["Срок","На время рассмотрения заявки и действия договора, затем — в сроки хранения, установленные законодательством."],["Ваши права","Получать информацию об обработке, требовать изменения или удаления данных, отозвать согласие — в «Профиле → Мои согласия» или письмом оператору. Обжаловать действия оператора в Национальный центр защиты персональных данных."],["Если не дать согласие","Без согласия мы не сможем рассмотреть заявку. Смотреть каталог и считать платёж можно и без него."]]],
+ cb:["Согласие на кредитный отчёт",[["Что это","Лизинговая компания запросит ваш кредитный отчёт, чтобы оценить действующие кредиты и платёжную дисциплину."],["Кто запрашивает","Лизинговая компания, рассматривающая заявку — [наименование]."],["Срок действия","На время рассмотрения заявки."],["Если не дать согласие","Без кредитного отчёта заявку на лизинг рассмотреть нельзя."]]],
+ mk:["Новости и предложения",[["Что будем присылать","Акции дилеров, снижение цен на понравившиеся машины, новые предложения по лизингу."],["Как отказаться","В любой момент — «Профиль → Мои согласия» или по ссылке в сообщении. На рассмотрение заявки отказ не влияет."]]],
+ acc:["Вход и личный кабинет",[["Кто обрабатывает",OPR+"."],["Какие данные","ФИО, дата рождения, телефон — из МСИ."],["Зачем","Создать личный кабинет, показывать ваши заявки, договор и уведомления."],["Ваши права","Отозвать согласие и удалить кабинет — «Профиль → Мои согласия»."]]],
+ policy:["Политика обработки данных",[["О документе","Полный текст политики оператора в отношении обработки персональных данных. По закону он должен быть в свободном доступе — в приложении и на сайте."],["Что в нём","Какие данные и зачем мы обрабатываем, кому передаём, как защищаем, сроки хранения, права пользователя и как ими воспользоваться."],["Контакты","Ответственный за обработку персональных данных: [ФИО / подразделение, e-mail]."]]]};
+
 /* ===== actions ===== */
 function closeAll(){S.detail=null;S.sheet=null;S.story=null;S.peek=null;S.ov=null;S.quiz=null;S.flow=null;}
 function like(id,el){if(!has(S.liked,id)){S.liked.push(id);S.stats.likes++;}var i=S.skipped.indexOf(id);if(i>=0)S.skipped.splice(i,1);S.history.push({id:id,t:"like"});(S.round=S.round||[]).push(id);blip(880);
@@ -1269,7 +1295,7 @@ function closeDetail(){var id=S.detail&&S.detail.id,hero=document.querySelector(
  S.detail=null;}
 function startApply(id){var c=car(id),d=S.detail&&S.detail.id===id?dCalc(c,S.detail):null;
  if(S.app&&!S.contract){closeAll();S.flow={stage:"app"};toast("У вас уже есть активная заявка");return true;}
- S.co={id:id,adv:d?d.adv:advFor(c).sum,term:d?S.detail.term:myTerm()};S.sheet="checkout";}
+ S.co={id:id,adv:d?d.adv:advFor(c).sum,term:d?S.detail.term:myTerm()};S.cons={};S.incDraft=null;S.sheet="checkout";}
 function setUser(){S.user={name:"Алексей И."};}
 function demoApp(step){setUser();S.income=S.income||4200;S.limit={amount:140000,minAdv:20,maxTerm:60};var c=car(5),adv=Math.max(S.cond.advSum,c.price*.2);
  S.app={id:5,step:step,adv:adv,term:36,pay:annuity(c.price-adv,36),day:step>5?0:null,slot:step>5?1:null};S.contract=null;closeAll();S.flow={stage:"app"};S.tab="home";S.hv="home";}
@@ -1324,10 +1350,15 @@ var A={
  ask:function(v){var c=car(S.detail.id),q=CHATQ[+v];S.chat[c.id]=(S.chat[c.id]||[]).concat([["me",q[0]]]);S.typing=true;render();var b=document.getElementById("chatBox");if(b)b.scrollTop=1e5;
   setTimeout(function(){S.typing=false;S.chat[c.id].push(["them",q[1](c)]);if(S.sheet==="chat"){render();var b2=document.getElementById("chatBox");if(b2)b2.scrollTop=1e5;}},1100);return true;},
  apply:function(v,el){return startApply(+el.dataset.id);},
- getLimit:function(){S.co={id:null};S.sheet="checkout";},
- msiQuick:function(){setUser();toast("Вы вошли через МСИ (демо)");return true;},
+ getLimit:function(){S.co={id:null};S.cons={};S.incDraft=null;S.sheet="checkout";},
+ msiQuick:function(){S.sheet="login";S.loginOk=false;},
+ loginGo:function(){if(!S.loginOk)return true;setUser();addCons(["acc"]);S.sheet=null;toast("Вы вошли через МСИ (демо)");return true;},
+ pdDoc:function(v){S.pdFrom=S.sheet==="checkout"?"checkout":S.sheet==="login"?"login":S.sheet==="consents"?"consents":null;S.pdDoc=v;S.sheet="pdDoc";},
+ pdBack:function(){S.sheet=S.pdFrom||null;S.pdFrom=null;},
+ openConsents:function(){S.sheet="consents";},
+ revoke:function(v){var x=S.consents[+v];x.off=today();toast("Согласие отозвано");return true;},
  confirmCo:function(){var a=document.getElementById("cs1"),b=document.getElementById("cs2"),inc=document.getElementById("inc");if(!a.checked||!b.checked){toast("Отметьте оба обязательных согласия");return true;}
-  var iv=+(inc.value||"").replace(/\D/g,"");if(iv<300){toast("Укажите доход в месяц");inc.focus();return true;}S.income=iv;setUser();S.sheet=null;var id=S.co.id;S.flow={stage:"scoring",id:id};S.detail=null;render();
+  var iv=+(inc.value||"").replace(/\D/g,"");if(iv<300){toast("Укажите доход в месяц");inc.focus();return true;}S.income=iv;setUser();addCons(["pd","cb"].concat(S.cons.mk?["mk"]:[]));S.sheet=null;var id=S.co.id;S.flow={stage:"scoring",id:id};S.detail=null;render();
   setTimeout(function(){if(!S.flow||S.flow.stage!=="scoring")return;S.flow.stage="result";S.flow.fail=S.scoreFail;if(!S.scoreFail){S.limit={amount:140000,minAdv:20,maxTerm:60};if(!id)notify({ic:"check",col:"var(--mint-2)",t:"Предварительно одобрено",s:"До 140 000 BYN · аванс от 20% · до 60 мес.",go:["profile"]});}
    else notify({ic:"info",col:"var(--danger)",t:"Заявка не одобрена",s:"Попробуйте увеличить аванс или выбрать машину дешевле",go:["profile"]});render();},1800);return true;},
  limitToCatalog:function(){S.flow=null;S.f.inLimit=true;enterList();},
@@ -1384,6 +1415,8 @@ var A={
 };
 function resetPrices(){CARS.forEach(function(c){c.price=c.price0;});CARS[0].ad=true;CARS[1].ad=true;CARS.slice(2).forEach(function(c){c.ad=false;});}
 
+function today(){return new Date().toLocaleDateString("ru-RU");}
+function addCons(ks){S.consents=S.consents||[];ks.forEach(function(k){if(!S.consents.some(function(x){return x.k===k&&!x.off;}))S.consents.push({k:k,d:today()});});}
 /* ===== events ===== */
 var noClickUntil=0;
 function bindEvents(){
@@ -1394,6 +1427,8 @@ function bindEvents(){
  app.addEventListener("keydown",function(e){if(e.target.id==="q"&&e.key==="Enter"){e.preventDefault();applyPhrase(e.target.value);render();}});
  app.addEventListener("change",function(e){var el=e.target;
   if(el.id==="sortSel"){S.sort=el.value;render();}
+  if(el.dataset.cons){S.cons=S.cons||{};S.cons[el.dataset.cons]=el.checked;var ok=S.cons.pd&&S.cons.cb,b=document.getElementById("coBtn");if(b)b.disabled=!ok;t$("coHint",ok?"Демо: вход через МСИ имитируется, данные тестовые.":"Отметьте два обязательных согласия");}
+  if(el.id==="lgCons"){S.loginOk=el.checked;var lb=document.getElementById("lgBtn");if(lb)lb.disabled=!el.checked;}
   if(el.id==="fLimit"){S.f.inLimit=el.checked;updF();}
   if(el.dataset.cmp!=null){S.cmp[+el.dataset.cmp]=+el.value;render();}
   if(el.id==="pcR"){render();}
@@ -1408,7 +1443,7 @@ function t$(id,s){var x=document.getElementById(id);if(x)x.innerHTML=s;}
 function updF(){var b=document.getElementById("fApply");if(b)b.textContent=fApplyLbl();}
 function onInput(e){var el=e.target,v=+el.value,a=el.dataset.a;
  if(el.id==="q"){S.qDraft=el.value;t$("und",undText(el.value));return;}
- if(el.id==="inc"){var iv=+(el.value||"").replace(/\D/g,""),c=S.co&&S.co.id?car(S.co.id):null;var fm=iv?fmt(iv):"";if(el.value!==fm){el.value=fm;}if(!c)return;var ch=chance(appTerms(c).pay,iv||1),i=document.getElementById("mtI");
+ if(el.id==="inc"){var iv=+(el.value||"").replace(/\D/g,"");S.incDraft=iv||null;var c=S.co&&S.co.id?car(S.co.id):null;var fm=iv?fmt(iv):"";if(el.value!==fm){el.value=fm;}if(!c)return;var ch=chance(appTerms(c).pay,iv||1),i=document.getElementById("mtI");
   if(iv<300){i.style.width="0";t$("mtT","Укажите доход");document.getElementById("mtT").className="";t$("mtS","покажем шанс одобрения");return;}
   i.style.width=ch.p+"%";i.style.background=ch.col;t$("mtT",ch.t);document.getElementById("mtT").className=ch.cls;t$("mtS","платёж — "+Math.round(ch.r*100)+"% дохода");return;}
  if(!a)return;
